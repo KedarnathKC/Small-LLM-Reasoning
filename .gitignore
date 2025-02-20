@@ -1,8 +1,13 @@
-\kchimmad\.ipynb_checkpoints
-\harsha\.ipynb_checkpoints
-\kchimmad\slurm_logs
-\transformers_cache
+# \kchimmad\.ipynb_checkpoints
+# \harsha\.ipynb_checkpoints
+# \kchimmad\slurm_logs
+# \transformers_cache
+# \datasets
+# \outputs
+# \outputs_70B
+# \kchimmad\output
+
 \datasets
+\scratch
 \outputs
-\outputs_70B
 
