@@ -1,0 +1,7 @@
+README.md
+setup.py
+src/small_llm_reasoning.egg-info/PKG-INFO
+src/small_llm_reasoning.egg-info/SOURCES.txt
+src/small_llm_reasoning.egg-info/dependency_links.txt
+src/small_llm_reasoning.egg-info/requires.txt
+src/small_llm_reasoning.egg-info/top_level.txt
