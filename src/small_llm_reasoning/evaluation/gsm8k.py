@@ -44,13 +44,13 @@ def get_answer_dataset(row):
 def get_answer_model(row):
 
     # regex_pattern = r"The final answer is ((-?[$0-9.,]{2,})|(-?[0-9]+))"
-    regex_pattern = r"The final answer is (?:-?[$0-9.,]*?(-?[0-9]+(?:\.[0-9]+)?))"
+    regex_pattern = r"The final answer is -?\$?([0-9,]+(?:\.[0-9]+)?)"
 
     # TODO: Currently, only evaluating the first generation for each example. 
     match = re.search(regex_pattern, row['output'][0])
     if match:
         # Group -1 corresponds to the entire match
-        result = match.group(1)
+        result = match.group(1).replace(",", "")
     else:
         result = "None"
 
@@ -67,13 +67,13 @@ def get_score(data_path, output_path):
     df = pd.read_json(output_path)
     # df.drop(columns=['score','model_answer'],inplace=True)
     df['model_answer'] = df.apply(get_answer_model,axis=1)
-    test['GT_Answer'] = test.apply(get_answer_dataset, axis=1)
+    df['GT_Answer'] = test.apply(get_answer_dataset, axis=1)
     # print(f'DF Shape: {df.shape}, Test Shape: {test.shape}')
     exact_match_metric = load("exact_match")
     
     # df['score'] = (df['model_answer'] == test['GT_Answer']).astype(int)
     for i in range(df.shape[0]):
-        df.loc[i,'score'] = exact_match_metric.compute(predictions = [df.iloc[i]['model_answer']], references = [test.iloc[i]['GT_Answer']])['exact_match']
+        df.loc[i,'score'] = exact_match_metric.compute(predictions = [df.iloc[i]['model_answer']], references = [df.iloc[i]['GT_Answer']])['exact_match']
     
     # df.drop(columns=['model_answer'], inplace=True)
     score = df['score'].sum()/df.shape[0]
@@ -88,8 +88,8 @@ def get_score(data_path, output_path):
 
 def main():
     # data_test = load_from_disk("../datasets/gsm8k/test")
-    data_path ="../datasets/gsm8k/test"
-    model_output_path = f"../outputs/gsm8k/LLaMA1B/generated_outputs_full_precision.json" 
+    data_path ="./datasets/gsm8k/test"
+    model_output_path = f"./outputs/exp-1.4/eval_1/generated_outputs.json" 
 
     score = get_score(data_path, model_output_path)
     print("The score of the model is: ",score)
