@@ -14,7 +14,6 @@ setup(
         "transformers==4.48.1",
         "vllm==0.6.0",
         "vllm-flash-attn==2.6.1",
-        "datasets==3.2.0",
-        "evaluate-0.4.3"
+        "datasets==3.2.0"
     ],
 )

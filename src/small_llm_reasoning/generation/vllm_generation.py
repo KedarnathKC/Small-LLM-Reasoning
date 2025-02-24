@@ -12,17 +12,13 @@ cache_directory = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/tr
 os.environ['HF_HOME'] = cache_directory
 
 def llama_forward(
-    prompts: List[List[Dict]],
+    prompts: List[List[Dict]]= None,
     model: Optional[str] = None,
     model_path: Optional[str] = None,
     max_tokens: int = 300,  # Generation length
     temperature: float = 0.1,
     n_samples: int = 8,
-    n_gpus: int = 8,
-    enable_lora: bool = False,
-    lora_name: Optional[str] = None,
-    lora_int_id: Optional[int] = None,
-    lora_path: Optional[str] = None
+    n_gpus: int = 8
 ) -> Optional[Sequence[str]]:
     assert model is not None or model_path is not None, "model or model_path must be provided"
 
@@ -35,7 +31,9 @@ def llama_forward(
     sampling_params = SamplingParams(n=n_samples,
                                      temperature=temperature,
                                      max_tokens=max_tokens,
-                                     stop=stop_strings)
+                                     stop=stop_strings,
+                                     seed=1)
+
 
     # Create an LLM.
     if model is None:
@@ -43,24 +41,15 @@ def llama_forward(
             model=model_path, 
             tokenizer=model_path, 
             tensor_parallel_size=n_gpus, 
-            enable_lora=enable_lora  
+            # enable_lora=enable_lora  
         )
-        
+
+    all_outputs = model.generate(
+        sampling_params=sampling_params,
+        prompts=prompts
+    )
     
-    # all_outputs = model.generate(prompts=prompts, sampling_params=sampling_params)
-    if enable_lora:
-        all_outputs = model.chat(
-            messages = prompts, 
-            sampling_params=sampling_params, 
-            use_tqdm=True, 
-            lora_request=LoRARequest(
-                lora_name=lora_name, 
-                lora_int_id=lora_int_id,
-                lora_path= lora_path
-            )
-        )
-    else:
-        all_outputs = model.chat(messages = prompts, sampling_params=sampling_params, use_tqdm=True)
 
 
     return all_outputs
+

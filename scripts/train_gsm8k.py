@@ -1,59 +1,95 @@
-import argparse
-import torch
-from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer, AutoConfig
 import os
-from datasets import load_from_disk
-from trl import SFTTrainer, SFTConfig
-from trl.trainer import DataCollatorForCompletionOnlyLM
 import re
+import torch
+import argparse
+from datasets import load_from_disk
+from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer, AutoConfig
+from trl import  SFTConfig, SFTTrainer
+from small_llm_reasoning.trainer.sft_trainer import CustomizedSFTTrainer
+from trl.trainer import ConstantLengthDataset, DataCollatorForCompletionOnlyLM
 from peft import LoraConfig
-from small_llm_reasoning.data.utils import fromatting_prompts_func, format_answer
 
-# Set up the transformers_cache
-cache_dir = '../transformers_cache'
+cache_dir = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache'
 os.environ['TRANSFORMERS_CACHE'] = cache_dir
 
-def train(model_name, train_data_path, hf_token, output_path, batch_size, lora=False):
+
+# Loading model
+hf_token = os.getenv("hf_token")
+
+# def formatting_prompts_func(examples):
+#     formatted_examples = []
+#     for i in range(len(examples['question'])):
+#         answer = format_answer(examples['answer'][i])
+#         text = f'<|start_header_id|>user<|end_header_id|>\n\nGiven the following problem, reason and give a final answer to the problem.\nProblem: {examples['question'][i]}\nYour response should end with "The final answer is [answer]" where [answer] is the response to the problem.\n<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{answer}'
+#         formatted_examples.append(text)
+#     return formatted_examples
+
+def formatting_prompts_func(examples):
+    if isinstance(examples, dict) and not isinstance(examples['question'], list):
+        # Handle single example
+        answer = format_answer(examples['answer'])
+        text = f'<|start_header_id|>user<|end_header_id|>\n\nGiven the following problem, reason and give a final answer to the problem.\nProblem: {examples['question']}\nYour response should end with "The final answer is [answer]" where [answer] is the response to the problem.\n<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{answer}'
+        return [text]
+    else:
+        # Handle batch of examples
+        formatted_examples = []
+        for i in range(len(examples['question'])):
+            answer = format_answer(examples['answer'][i])
+            text = f'<|start_header_id|>user<|end_header_id|>\n\nGiven the following problem, reason and give a final answer to the problem.\nProblem: {examples['question'][i]}\nYour response should end with "The final answer is [answer]" where [answer] is the response to the problem.\n<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{answer}'
+            formatted_examples.append(text)
+        return formatted_examples
+
+def format_answer(answer):
+        answer = re.sub(r'<<.*?>>', '', answer)
+        answer = answer.replace('####', 'The final answer is')
+        return answer
+
+def finetune(model_name, train_data_path, output_dir, lora, epochs, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
     '''
-        model_name : Specifies the name of the model to finetune
-        train_data_path : Specifies the location of training data
-        hf_token : Hugging Face token 
-        output_path : Specifies the output directory
-        batch_size : Batch size
-        lora : Specifies whether to do LoRA finetuning or full model finetuning
+    model_name: 
+    train_data_path: 
+    output_dir:
+    lora:
+    epochs:
+    lr:
+    lr_scheduler_type:
+    warmup:
+    weight_decay:
+    per_device_train_batch_size:
+    gradient_accumulation_steps: 
+    max_seq_length: 
     '''
 
     # Loading data
-    data_train = load_from_disk(train_data_path)
+    data_train= load_from_disk(train_data_path)
 
-    config = AutoConfig.from_pretrained(model_name)
     tokenizer = AutoTokenizer.from_pretrained(model_name, token=hf_token, cache_dir=cache_dir)
     tokenizer.pad_token_id = tokenizer.eos_token_id
 
-    if 'llama' in config.model_type:
-        response_template = "<|start_header_id|>assistant<|end_header_id|>\n\n"
-    else:
-        raise NotImplementedError
-    
+    response_template = "<|start_header_id|>assistant<|end_header_id|>\n\n"
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
-
+    
     # Set up the trainer
     training_args = SFTConfig(
         model_init_kwargs={
             "torch_dtype": "bfloat16",
-            "cache_dir": cache_dir
+            "cache_dir":cache_dir
         },
-        output_dir="./outputs/LLaMA1B/train_exp_2_Full",
-        num_train_epochs=3,
-        learning_rate=2e-5,
-        # batch-size = 16 -> 1B, 8 -> 3B
-        per_device_train_batch_size=16,
-        gradient_accumulation_steps=1,
+        output_dir=output_dir,
+        num_train_epochs=epochs,
+        learning_rate=lr,
+        lr_scheduler_type=lr_scheduler_type,
+        weight_decay=weight_decay,
+        warmup_ratio=warmup,
+        per_device_train_batch_size=per_device_train_batch_size,
+        gradient_accumulation_steps=gradient_accumulation_steps,
         save_strategy="epoch",
         logging_steps=100,
         # Using this 3072(prompt) + 512(output). The 3072(prompt) is taken from LLaMA : https://huggingface.co/datasets/meta-llama/Llama-3.2-1B-Instruct-evals?row=0
-        max_seq_length  = 500 
+        max_seq_length  = max_seq_length
     )
+
+    training_args.add_special_tokens = False
 
     if lora:
         # PEFT config
@@ -68,57 +104,58 @@ def train(model_name, train_data_path, hf_token, output_path, batch_size, lora=F
             task_type="CAUSAL_LM",
         )
 
-        trainer = SFTTrainer(
+        trainer = CustomizedSFTTrainer(
             model=model_name,
             args=training_args,
             train_dataset=data_train,
-            formatting_func=fromatting_prompts_func,
+            formatting_func=formatting_prompts_func,
             data_collator=collator,
             tokenizer=tokenizer,
             peft_config=peft_config
         )
-
-
     else:
-        trainer = SFTTrainer(
+        trainer = CustomizedSFTTrainer(
             model=model_name,
             args=training_args,
             train_dataset=data_train,
-            formatting_func=fromatting_prompts_func,
+            formatting_func=formatting_prompts_func,
             data_collator=collator,
             tokenizer=tokenizer
         )
          
     # Start training
     trainer.train()
-
-
-
-
-def main():
-    # Loading model
-    hf_token = os.getenv("hf_token")
-
-    # Initialize parser
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument("--model")
-    parser.add_argument("--data_path")
-    parser.add_argument("--lora", action="store_true", help="Set this flag to true")
-    parser.add_argument("--exp_id")
-    parser.add_argument("--batch_size")
-
     
-    # Read arguments from command line
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model_name", type=str, default=None)
+    parser.add_argument("--train_data_path", type=str, default=None)
+    parser.add_argument("--output_dir", type=str, default=None)
+    parser.add_argument("--lora", action="store_true", help="Set this flag to true", default=None)
+    parser.add_argument("--epochs", type=int, default=1)
+    parser.add_argument("--lr", type=float, default=2e-5)
+    parser.add_argument("--lr_scheduler_type", type=str, default="linear")
+    parser.add_argument("--warmup", type=float, default=0.1)
+    parser.add_argument("--weight_decay", type=float, default=0.1)
+    parser.add_argument("--per_device_train_batch_size", type=int, default=16)
+    parser.add_argument("--gradient_accumulation_steps", type=int, default=1)
+    parser.add_argument("--max_seq_length", type=int, default=500)
     args = parser.parse_args()
-
-    model_name = args.model
-    train_data_path = args.data_path
-    lora = args.lora
-    output_path = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/Small-LLM-Reasoning/outputs/'+args.exp_id
-    batch_size = args.batch_size
-
-    train(model_name=model_name, train_data_path=train_data_path, hf_token=hf_token, output_path=output_path, batch_size=batch_size, lora=lora)
+    
+    finetune(
+        model_name=args.model_name, 
+        train_data_path=args.train_data_path, 
+        output_dir=args.output_dir, 
+        lora=args.lora,
+        epochs=args.epochs, 
+        lr=args.lr, 
+        lr_scheduler_type=args.lr_scheduler_type,
+        weight_decay=args.weight_decay,
+        warmup=args.warmup,
+        per_device_train_batch_size=args.per_device_train_batch_size,
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
+        max_seq_length=args.max_seq_length
+    )
 
 if __name__=='__main__':
     main()

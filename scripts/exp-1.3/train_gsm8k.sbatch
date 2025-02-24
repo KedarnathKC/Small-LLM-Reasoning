@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=SFT_3B
+#SBATCH --job-name=SFT_1B
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --constraint=l40s

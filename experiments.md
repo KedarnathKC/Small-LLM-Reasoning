@@ -2,44 +2,301 @@
  - Purpose: Set up few-shot prompting baseline
  - evaluation data : gsm8k
  - model: off-the-shelf instruction tuned models
- - n-shot: 8
  - #### Eval 1
     - Model: LLaMA 3.2 1B
+    - n-shot: 0
  - #### Eval 2
+    - Model: LLaMA 3.2 1B
+    - n-shot: 8
+ - #### Eval 3
     - Model: LLaMA 3.2 3B
-- #### Eval 3
-    - Model: LLaMA 3.1 8B
-
+    - n-shot: 0
+ - #### Eval 4
+    - Model: LLaMA 3.2 3B
+    - n-shot: 8
+ 
+ 
 
 ### exp-1.1
  - Purpose: SFT on off-the-shelf LLaMA 3.2 1B using full model finetuning using zero-shot examples.
  - training data: custom gsm8k train split
+ - lr=1e-5
  - #### Eval 1
-    - Purpose: Inference with 0-shot
+    - Model: Checkpoint-343
+    - n-shot: 0
  - #### Eval 2
-    - Purpose: Inference with 8-shot
-    
+    - Model: Checkpoint-343
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-686
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-686
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-1029
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-1029
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-1372
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-1372
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-1715
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-1715
+    - n-shot: 8
+
 
 ### exp-1.2
- - Purpose: SFT on off-the-shelf LLaMA 3.2 1B using LoRA finetuning using zero-shot examples.
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 1B using lora finetuning using zero-shot examples.
  - training data: custom gsm8k train split
+ - lr=1e-5
  - #### Eval 1
-    - Purpose: Inference with 0-shot
+    - Model: Checkpoint-343
+    - n-shot: 0
  - #### Eval 2
-    - Purpose: Inference with 8-shot
+    - Model: Checkpoint-343
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-686
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-686
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-1029
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-1029
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-1372
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-1372
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-1715
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-1715
+    - n-shot: 8
 
 ### exp-1.3
- - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 1B using full model finetuning using zero-shot examples.
  - training data: custom gsm8k train split
+ - lr=3e-5
  - #### Eval 1
-    - Purpose: Inference with 0-shot
+    - Model: Checkpoint-343
+    - n-shot: 0
  - #### Eval 2
-    - Purpose: Inference with 8-shot
+    - Model: Checkpoint-343
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-686
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-686
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-1029
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-1029
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-1372
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-1372
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-1715
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-1715
+    - n-shot: 8
+
 
 ### exp-1.4
- - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using LoRA finetuning using zero-shot examples.
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 1B using lora finetuning using zero-shot examples.
  - training data: custom gsm8k train split
+ - lr=3e-5
  - #### Eval 1
-    - Purpose: Inference with 0-shot
+    - Model: Checkpoint-343
+    - n-shot: 0
  - #### Eval 2
-    - Purpose: Inference with 8-shot
+    - Model: Checkpoint-343
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-686
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-686
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-1029
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-1029
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-1372
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-1372
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-1715
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-1715
+    - n-shot: 8
+
+
+### exp-1.5
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train split
+ - lr=1e-5
+ - #### Eval 1
+    - Model: Checkpoint-685
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-685
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-1370
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-1370
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-2055
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-2055
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-2740
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-2740
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-3425
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-3425
+    - n-shot: 8
+
+
+### exp-1.6
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora finetuning using zero-shot examples.
+ - training data: custom gsm8k train split
+ - lr=1e-5
+ - #### Eval 1
+    - Model: Checkpoint-685
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-685
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-1370
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-1370
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-2055
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-2055
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-2740
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-2740
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-3425
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-3425
+    - n-shot: 8
+
+### exp-1.7
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train split
+ - lr=3e-5
+ - #### Eval 1
+    - Model: Checkpoint-685
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-685
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-1370
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-1370
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-2055
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-2055
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-2740
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-2740
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-3425
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-3425
+    - n-shot: 8
+
+### exp-1.8
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora finetuning using zero-shot examples.
+ - training data: custom gsm8k train split
+ - lr=3e-5
+ - #### Eval 1
+    - Model: Checkpoint-685
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-685
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-1370
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-1370
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-2055
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-2055
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-2740
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-2740
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-3425
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-3425
+    - n-shot: 8
