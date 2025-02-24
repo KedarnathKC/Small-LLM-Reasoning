@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=Eval_3B_LoRA
+#SBATCH --job-name=Eval_1B_L8B
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --constraint=l40s

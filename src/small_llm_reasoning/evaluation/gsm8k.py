@@ -89,7 +89,7 @@ def get_score(data_path, output_path):
 def main():
     # data_test = load_from_disk("../datasets/gsm8k/test")
     data_path ="./datasets/gsm8k/test"
-    model_output_path = f"./outputs/exp-1.4/eval_1/generated_outputs.json" 
+    model_output_path = f"/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/Small-LLM-Reasoning/outputs/exp-0/eval_1/generated_outputs.json" 
 
     score = get_score(data_path, model_output_path)
     print("The score of the model is: ",score)
