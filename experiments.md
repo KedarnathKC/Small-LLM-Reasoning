@@ -21,6 +21,7 @@
  - Purpose: SFT on off-the-shelf LLaMA 3.2 1B using full model finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=1e-5
+ - weight_decay=0.1
  - #### Eval 1
     - Model: Checkpoint-343
     - n-shot: 0
@@ -57,6 +58,7 @@
  - Purpose: SFT on off-the-shelf LLaMA 3.2 1B using lora finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=1e-5
+ - weight_decay=0.1
  - #### Eval 1
     - Model: Checkpoint-343
     - n-shot: 0
@@ -92,6 +94,7 @@
  - Purpose: SFT on off-the-shelf LLaMA 3.2 1B using full model finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=3e-5
+ - weight_decay=0.1
  - #### Eval 1
     - Model: Checkpoint-343
     - n-shot: 0
@@ -128,6 +131,7 @@
  - Purpose: SFT on off-the-shelf LLaMA 3.2 1B using lora finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=3e-5
+ - weight_decay=0.1
  - #### Eval 1
     - Model: Checkpoint-343
     - n-shot: 0
@@ -164,6 +168,7 @@
  - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=1e-5
+ - weight_decay=0.1
  - #### Eval 1
     - Model: Checkpoint-685
     - n-shot: 0
@@ -200,6 +205,7 @@
  - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=1e-5
+ - weight_decay=0.1
  - #### Eval 1
     - Model: Checkpoint-685
     - n-shot: 0
@@ -235,6 +241,7 @@
  - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=3e-5
+ - weight_decay=0.1
  - #### Eval 1
     - Model: Checkpoint-685
     - n-shot: 0
@@ -270,6 +277,7 @@
  - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=3e-5
+ - weight_decay=0.1
  - #### Eval 1
     - Model: Checkpoint-685
     - n-shot: 0

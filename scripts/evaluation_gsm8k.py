@@ -67,6 +67,8 @@ def generate(model_path, eval_data_path, prompting_strategy, max_tokens, tempera
     score = get_score(eval_data_path,output_path)
     print(f"SCORE of {model_path} : ",score)
 
+    # To avoid running into OOM
+    del tokenizer
 
 def main():
     parser = argparse.ArgumentParser()
@@ -80,18 +82,32 @@ def main():
     parser.add_argument("--exp_id", type=str, help="Used in the output path, e.g., exp-1.1")
     parser.add_argument("--eval_id", type=str, help="Used in the output path, e.g., eval-1")
     args = parser.parse_args()
-    
-    output_path = f'./outputs/{args.exp_id}/{args.eval_id}/generated_outputs.json'
-    generate(
-        model_path=args.model_path, 
-        prompting_strategy=args.prompting_strategy,
-        eval_data_path=args.eval_data_path, 
-        max_tokens=args.max_tokens, 
-        temperature=args.temperature, 
-        n_samples=args.n_samples, 
-        n_gpus=args.n_gpus,
-        output_path=output_path
-    )
+
+
+    # Iterate over all checkpoints inside model_path
+    checkpoints = sorted([os.path.join(args.model_path, d) for d in os.listdir(args.model_path) if os.path.isdir(os.path.join(args.model_path, d))])
+
+    if not checkpoints:
+        print(f"No checkpoints found in {args.model_path}")
+        
+    # output_path = f'./outputs/{args.exp_id}/{args.eval_id}/generated_outputs.json'
+    eval_id = int(args.eval_id)
+    for checkpoint in checkpoints:
+        model_path = os.path.join(args.model_path, os.path.basename(checkpoint))
+        output_path = f'./outputs/{args.exp_id}/eval_{eval_id}/generated_outputs.json'
+
+        print(f"\nEvaluating model: {model_path}\n")
+        generate(
+            model_path= model_path,
+            prompting_strategy=args.prompting_strategy,
+            eval_data_path=args.eval_data_path, 
+            max_tokens=args.max_tokens, 
+            temperature=args.temperature, 
+            n_samples=args.n_samples, 
+            n_gpus=args.n_gpus,
+            output_path=output_path
+        )
+        eval_id+=2
 
 
 if __name__=='__main__':
