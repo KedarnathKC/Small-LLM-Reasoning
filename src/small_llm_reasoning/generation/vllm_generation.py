@@ -49,7 +49,8 @@ def llama_forward(
         prompts=prompts
     )
     
-
+    # To avoid running into OOM
+    del model
 
     return all_outputs
 
