@@ -1,24 +1,25 @@
 ### exp-0
  - Purpose: Set up few-shot prompting baseline
- - evaluation data : gsm8k
- - model: off-the-shelf instruction tuned models
+ - evaluation data : gsm8k test
+ - model: off-the-shelf models
  - #### Eval 1
-    - Model: LLaMA 3.2 1B
+    - Model: LLaMA 3.2 1B Instruct
     - n-shot: 0
  - #### Eval 2
-    - Model: LLaMA 3.2 1B
+    - Model: LLaMA 3.2 1B Instruct
     - n-shot: 8
  - #### Eval 3
-    - Model: LLaMA 3.2 3B
+    - Model: LLaMA 3.2 3B Instruct
     - n-shot: 0
  - #### Eval 4
-    - Model: LLaMA 3.2 3B
+    - Model: LLaMA 3.2 3B Instruct
     - n-shot: 8
- 
- 
+ - #### Eval 5
+    - Model: LLaMA 3.2 3B Pretrained
+    - n-shot: 8
 
 ### exp-1.1
- - Purpose: SFT on off-the-shelf LLaMA 3.2 1B using full model finetuning using zero-shot examples.
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 1B Instruct using full model finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=1e-5
  - weight_decay=0.1
@@ -55,7 +56,7 @@
 
 
 ### exp-1.2
- - Purpose: SFT on off-the-shelf LLaMA 3.2 1B using lora finetuning using zero-shot examples.
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 1B Instruct using lora finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=1e-5
  - weight_decay=0.1
@@ -91,7 +92,7 @@
     - n-shot: 8
 
 ### exp-1.3
- - Purpose: SFT on off-the-shelf LLaMA 3.2 1B using full model finetuning using zero-shot examples.
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 1B Instruct using full model finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=3e-5
  - weight_decay=0.1
@@ -128,7 +129,7 @@
 
 
 ### exp-1.4
- - Purpose: SFT on off-the-shelf LLaMA 3.2 1B using lora finetuning using zero-shot examples.
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 1B Instruct using lora finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=3e-5
  - weight_decay=0.1
@@ -165,7 +166,7 @@
 
 
 ### exp-1.5
- - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B Instruct using full model finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=1e-5
  - weight_decay=0.1
@@ -202,7 +203,7 @@
 
 
 ### exp-1.6
- - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora finetuning using zero-shot examples.
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B Instruct using lora finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=1e-5
  - weight_decay=0.1
@@ -238,7 +239,7 @@
     - n-shot: 8
 
 ### exp-1.7
- - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B Instruct using full model finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=3e-5
  - weight_decay=0.1
@@ -274,7 +275,7 @@
     - n-shot: 8
 
 ### exp-1.8
- - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora finetuning using zero-shot examples.
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B Instruct using lora finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=3e-5
  - weight_decay=0.1
@@ -308,3 +309,2893 @@
  - #### Eval 10
     - Model: Checkpoint-3425
     - n-shot: 8
+ 
+
+### exp-1.9
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-5
+ - batch_size=16
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-343
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-343
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-1710
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-1710
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-343
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-686
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-1029
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-1372
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-1710
+    - data: gsm8k train 
+    - n-shot: 0
+
+
+### exp-1.10
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-5
+ - batch_size=32
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-172
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-172
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-855
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-855
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-172
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-344
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-516
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-688
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-855
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.11
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-5
+ - batch_size=64
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-85
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-85
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-425
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-425
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-85
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-170
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-255
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-340
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-425
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.12
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=5e-5
+ - batch_size=16
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-343
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-343
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-1710
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-1710
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-343
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-686
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-1029
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-1372
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-1710
+    - data: gsm8k train 
+    - n-shot: 0
+
+
+### exp-1.13
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=5e-5
+ - batch_size=32
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-172
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-172
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-855
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-855
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-172
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-344
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-516
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-688
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-855
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.14
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=5e-5
+ - batch_size=64
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-85
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-85
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-425
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-425
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-85
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-170
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-255
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-340
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-425
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.15
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=2e-5
+ - batch_size=16
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-343
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-343
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-1710
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-1710
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-343
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-686
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-1029
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-1372
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-1710
+    - data: gsm8k train 
+    - n-shot: 0
+
+
+### exp-1.16
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=2e-5
+ - batch_size=32
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-172
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-172
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-855
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-855
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-172
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-344
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-516
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-688
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-855
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.17
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=2e-5
+ - batch_size=64
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-85
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-85
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-425
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-425
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-85
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-170
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-255
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-340
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-425
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.18
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-4
+ - batch_size=16
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-343
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-343
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-1710
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-1710
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-343
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-686
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-1029
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-1372
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-1710
+    - data: gsm8k train 
+    - n-shot: 0
+
+
+### exp-1.19
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-4
+ - batch_size=32
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-172
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-172
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-855
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-855
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-172
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-344
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-516
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-688
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-855
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.20
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-4
+ - batch_size=64
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-85
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-85
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-425
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-425
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-85
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-170
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-255
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-340
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-425
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.21
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B instruct using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-5
+ - batch_size=16
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-343
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-343
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-1710
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-1710
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-343
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-686
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-1029
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-1372
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-1710
+    - data: gsm8k train 
+    - n-shot: 0
+
+
+### exp-1.22
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B instruct using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-5
+ - batch_size=32
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-172
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-172
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-855
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-855
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-172
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-344
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-516
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-688
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-855
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.23
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B instruct using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-5
+ - batch_size=64
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-85
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-85
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-425
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-425
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-85
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-170
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-255
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-340
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-425
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.24
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B instruct using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=5e-5
+ - batch_size=16
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-343
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-343
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-1710
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-1710
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-343
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-686
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-1029
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-1372
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-1710
+    - data: gsm8k train 
+    - n-shot: 0
+
+
+### exp-1.25
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B instruct using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=5e-5
+ - batch_size=32
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-172
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-172
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-855
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-855
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-172
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-344
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-516
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-688
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-855
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.26
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B instruct using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=5e-5
+ - batch_size=64
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-85
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-85
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-425
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-425
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-85
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-170
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-255
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-340
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-425
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.27
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B instruct using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=2e-5
+ - batch_size=16
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-343
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-343
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-1710
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-1710
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-343
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-686
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-1029
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-1372
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-1710
+    - data: gsm8k train 
+    - n-shot: 0
+
+
+### exp-1.28
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B instruct using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=2e-5
+ - batch_size=32
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-172
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-172
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-855
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-855
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-172
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-344
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-516
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-688
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-855
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.29
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B instruct using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=2e-5
+ - batch_size=64
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-85
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-85
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-425
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-425
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-85
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-170
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-255
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-340
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-425
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.30
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B instruct using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-4
+ - batch_size=16
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-343
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-343
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-1710
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-1710
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-343
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-686
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-1029
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-1372
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-1710
+    - data: gsm8k train 
+    - n-shot: 0
+
+
+### exp-1.31
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B instruct using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-4
+ - batch_size=32
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-172
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-172
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-855
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-855
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-172
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-344
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-516
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-688
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-855
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.32
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B instruct using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-4
+ - batch_size=64
+ - epochs=5
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-85
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-85
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-425
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-425
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-85
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-170
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 13
+    - Model: Checkpoint-255
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-340
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 15
+    - Model: Checkpoint-425
+    - data: gsm8k train 
+    - n-shot: 0
+   
+### exp-1.33
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-5
+ - batch_size=16
+ - weight_decay=0.01
+ - epochss=8
+ - #### Eval 1
+    - Model: Checkpoint-343
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-343
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-1715
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-1715
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-2058
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-2058
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 13
+    - Model: Checkpoint-2401
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-2401
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 15
+    - Model: Checkpoint-2736
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 16
+    - Model: Checkpoint-2736
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 17
+    - Model: Checkpoint-343
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 18
+    - Model: Checkpoint-686
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 19
+    - Model: Checkpoint-1029
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 20
+    - Model: Checkpoint-1372
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 21
+    - Model: Checkpoint-1715
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 22
+    - Model: Checkpoint-2058
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 23
+    - Model: Checkpoint-2401
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 24
+    - Model: Checkpoint-2736
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.34
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-5
+ - batch_size=32
+ - epochss=8
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-172
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-172
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-860
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-860
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-1032
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-1032
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 13
+    - Model: Checkpoint-1204
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-1204
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 15
+    - Model: Checkpoint-1368
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 16
+    - Model: Checkpoint-1368
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 17
+    - Model: Checkpoint-172
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 18
+    - Model: Checkpoint-344
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 19
+    - Model: Checkpoint-516
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 20
+    - Model: Checkpoint-688
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 21
+    - Model: Checkpoint-860
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 22
+    - Model: Checkpoint-1032
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 23
+    - Model: Checkpoint-1204
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 24
+    - Model: Checkpoint-1368
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.35
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-5
+ - batch_size=64
+ - epochs=8
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-85
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-85
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-425
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-425
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-510
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-510
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 13
+    - Model: Checkpoint-595
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-595
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 15
+    - Model: Checkpoint-680
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 16
+    - Model: Checkpoint-686
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 17
+    - Model: Checkpoint-85
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 18
+    - Model: Checkpoint-170
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 19
+    - Model: Checkpoint-255
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 20
+    - Model: Checkpoint-340
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 21
+    - Model: Checkpoint-425
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 22
+    - Model: Checkpoint-510
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 23
+    - Model: Checkpoint-595
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 24
+    - Model: Checkpoint-680
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.36
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=5e-5
+ - batch_size=16
+ - epochs=8
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-343
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-343
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-1715
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-1715
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-2058
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-2058
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 13
+    - Model: Checkpoint-2401
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-2401
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 15
+    - Model: Checkpoint-2736
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 16
+    - Model: Checkpoint-2736
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 17
+    - Model: Checkpoint-343
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 18
+    - Model: Checkpoint-686
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 19
+    - Model: Checkpoint-1029
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 20
+    - Model: Checkpoint-1372
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 21
+    - Model: Checkpoint-1715
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 22
+    - Model: Checkpoint-2058
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 23
+    - Model: Checkpoint-2401
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 24
+    - Model: Checkpoint-2736
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.37
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=5e-5
+ - batch_size=32
+ -  epochsss=8
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-172
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-172
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-860
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-860
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-1032
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-1032
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 13
+    - Model: Checkpoint-1204
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-1204
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 15
+    - Model: Checkpoint-1368
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 16
+    - Model: Checkpoint-1368
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 17
+    - Model: Checkpoint-172
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 18
+    - Model: Checkpoint-344
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 19
+    - Model: Checkpoint-516
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 20
+    - Model: Checkpoint-688
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 21
+    - Model: Checkpoint-860
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 22
+    - Model: Checkpoint-1032
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 23
+    - Model: Checkpoint-1204
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 24
+    - Model: Checkpoint-1368
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.38
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=5e-5
+ - batch_size=64
+ -  epochss=8
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-85
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-85
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-425
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-425
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-510
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-510
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 13
+    - Model: Checkpoint-595
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-595
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 15
+    - Model: Checkpoint-680
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 16
+    - Model: Checkpoint-686
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 17
+    - Model: Checkpoint-85
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 18
+    - Model: Checkpoint-170
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 19
+    - Model: Checkpoint-255
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 20
+    - Model: Checkpoint-340
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 21
+    - Model: Checkpoint-425
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 22
+    - Model: Checkpoint-510
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 23
+    - Model: Checkpoint-595
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 24
+    - Model: Checkpoint-680
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.39
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=2e-5
+ - batch_size=16
+ - epochss=8
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-343
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-343
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-1715
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-1715
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-2058
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-2058
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 13
+    - Model: Checkpoint-2401
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-2401
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 15
+    - Model: Checkpoint-2736
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 16
+    - Model: Checkpoint-2736
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 17
+    - Model: Checkpoint-343
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 18
+    - Model: Checkpoint-686
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 19
+    - Model: Checkpoint-1029
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 20
+    - Model: Checkpoint-1372
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 21
+    - Model: Checkpoint-1715
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 22
+    - Model: Checkpoint-2058
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 23
+    - Model: Checkpoint-2401
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 24
+    - Model: Checkpoint-2736
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.40
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=2e-5
+ - batch_size=32
+ - epochss=8
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-172
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-172
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-860
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-860
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-1032
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-1032
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 13
+    - Model: Checkpoint-1204
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-1204
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 15
+    - Model: Checkpoint-1368
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 16
+    - Model: Checkpoint-1368
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 17
+    - Model: Checkpoint-172
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 18
+    - Model: Checkpoint-344
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 19
+    - Model: Checkpoint-516
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 20
+    - Model: Checkpoint-688
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 21
+    - Model: Checkpoint-860
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 22
+    - Model: Checkpoint-1032
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 23
+    - Model: Checkpoint-1204
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 24
+    - Model: Checkpoint-1368
+    - data: gsm8k train 
+    - n-shot: 0
+
+
+### exp-1.41
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using full model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=2e-5
+ - batch_size=64
+ - epochss=8
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-85
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-85
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-425
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-425
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-510
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-510
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 13
+    - Model: Checkpoint-595
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-595
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 15
+    - Model: Checkpoint-680
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 16
+    - Model: Checkpoint-686
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 17
+    - Model: Checkpoint-85
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 18
+    - Model: Checkpoint-170
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 19
+    - Model: Checkpoint-255
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 20
+    - Model: Checkpoint-340
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 21
+    - Model: Checkpoint-425
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 22
+    - Model: Checkpoint-510
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 23
+    - Model: Checkpoint-595
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 24
+    - Model: Checkpoint-680
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.42
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-4
+ - batch_size=16
+ - epochss=8
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-343
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-343
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-686
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-1029
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-1372
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-1715
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-1715
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-2058
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-2058
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 13
+    - Model: Checkpoint-2401
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-2401
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 15
+    - Model: Checkpoint-2736
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 16
+    - Model: Checkpoint-2736
+    - data: gsm8k test 
+    - n-shot: 8
+ - #### Eval 17
+    - Model: Checkpoint-343
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 18
+    - Model: Checkpoint-686
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 19
+    - Model: Checkpoint-1029
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 20
+    - Model: Checkpoint-1372
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 21
+    - Model: Checkpoint-1715
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 22
+    - Model: Checkpoint-2058
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 23
+    - Model: Checkpoint-2401
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 24
+    - Model: Checkpoint-2736
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.43
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-4
+ - batch_size=32
+ - epochss=8
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-172
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-172
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-344
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-516
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-688
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-860
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-860
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-1032
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-1032
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 13
+    - Model: Checkpoint-1204
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-1204
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 15
+    - Model: Checkpoint-1368
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 16
+    - Model: Checkpoint-1368
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 17
+    - Model: Checkpoint-172
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 18
+    - Model: Checkpoint-344
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 19
+    - Model: Checkpoint-516
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 20
+    - Model: Checkpoint-688
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 21
+    - Model: Checkpoint-860
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 22
+    - Model: Checkpoint-1032
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 23
+    - Model: Checkpoint-1204
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 24
+    - Model: Checkpoint-1368
+    - data: gsm8k train 
+    - n-shot: 0
+
+### exp-1.44
+ - Purpose: SFT on off-the-shelf LLaMA 3.2 3B using lora model finetuning using zero-shot examples.
+ - training data: custom gsm8k train  
+ - lr=1e-4
+ - batch_size=64
+ -epochs=8
+ - weight_decay=0.01
+ - #### Eval 1
+    - Model: Checkpoint-85
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 2
+    - Model: Checkpoint-85
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 3
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 4
+    - Model: Checkpoint-170
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 5
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 6
+    - Model: Checkpoint-255
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 7
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 0
+ - #### Eval 8
+    - Model: Checkpoint-340
+    - data: gsm8k test  
+    - n-shot: 8
+ - #### Eval 9
+    - Model: Checkpoint-425
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 10
+    - Model: Checkpoint-425
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 11
+    - Model: Checkpoint-510
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 12
+    - Model: Checkpoint-510
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 13
+    - Model: Checkpoint-595
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 14
+    - Model: Checkpoint-595
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 15
+    - Model: Checkpoint-680
+    - data: gsm8k test 
+    - n-shot: 0
+ - #### Eval 16
+    - Model: Checkpoint-686
+    - data: gsm8k test
+    - n-shot: 8
+ - #### Eval 17
+    - Model: Checkpoint-85
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 18
+    - Model: Checkpoint-170
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 19
+    - Model: Checkpoint-255
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 20
+    - Model: Checkpoint-340
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 21
+    - Model: Checkpoint-425
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 22
+    - Model: Checkpoint-510
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 23
+    - Model: Checkpoint-595
+    - data: gsm8k train 
+    - n-shot: 0
+ - #### Eval 24
+    - Model: Checkpoint-680
+    - data: gsm8k train 
+    - n-shot: 0
