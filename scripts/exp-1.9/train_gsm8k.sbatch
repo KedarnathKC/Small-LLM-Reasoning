@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=SFT_3B
-#SBATCH --partition=gpu
+#SBATCH --partition=gpu-preempt
 #SBATCH --gres=gpu:1
 #SBATCH --constraint=l40s
 #SBATCH --cpus-per-task=2

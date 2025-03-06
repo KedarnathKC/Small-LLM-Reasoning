@@ -8,7 +8,7 @@ python scripts/train_gsm8k.py \
     --output_dir "./outputs/exp-1.24/checkpoints" \
     --lora \
     --epochs 5 \
-    --lr 1e-5 \
+    --lr 5e-5 \
     --lr_scheduler_type 'cosine' \
     --warmup 0.1 \
     --weight_decay 0.01 \

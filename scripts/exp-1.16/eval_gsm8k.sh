@@ -13,3 +13,9 @@ python scripts/evaluation_gsm8k.py \
     --eval_data_path ./datasets/gsm8k/tokenized/LLaMA3B/test/eight-shot/ \
     --exp_id exp-1.16 \
     --eval_id 2 \
+
+python scripts/evaluation_gsm8k.py \
+    --model_path ./outputs/exp-1.16/checkpoints/\
+    --eval_data_path ./datasets/gsm8k/tokenized/LLaMA3B/train/zero-shot/ \
+    --exp_id exp-1.16 \
+    --eval_id 11 \

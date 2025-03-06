@@ -1,4 +1,5 @@
 import os
+import gc
 import torch
 from typing import Sequence, Optional, Union, Iterable, List, Dict
 from vllm import LLM, SamplingParams
@@ -51,6 +52,8 @@ def llama_forward(
     
     # To avoid running into OOM
     del model
+    gc.collect()  # Trigger Python's garbage collector
+    torch.cuda.empty_cache()  # Free unused GPU memory
 
     return all_outputs
 
