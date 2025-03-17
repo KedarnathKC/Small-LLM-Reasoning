@@ -19,7 +19,8 @@ def llama_forward(
     max_tokens: int = 300,  # Generation length
     temperature: float = 0.1,
     n_samples: int = 8,
-    n_gpus: int = 8
+    n_gpus: int = 8,
+    log_probs:int | None = None
 ) -> Optional[Sequence[str]]:
     assert model is not None or model_path is not None, "model or model_path must be provided"
 
@@ -33,8 +34,9 @@ def llama_forward(
                                      temperature=temperature,
                                      max_tokens=max_tokens,
                                      stop=stop_strings,
-                                     seed=1)
-
+                                    #  seed=1,
+                                     logprobs=log_probs
+                                     )
 
     # Create an LLM.
     if model is None:
