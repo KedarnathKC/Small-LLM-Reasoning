@@ -16,13 +16,16 @@
     - n-shot: 8
  - #### Eval 5
     - Model: LLaMA 3.2 3B Pretrained
+    - n-shot: 0
+ - #### Eval 6
+    - Model: LLaMA 3.2 3B Pretrained
     - n-shot: 8
-
 ### exp-1.1
  - Purpose: SFT on off-the-shelf LLaMA 3.2 1B Instruct using full model finetuning using zero-shot examples.
  - training data: custom gsm8k train split
  - lr=1e-5
  - weight_decay=0.1
+ - batch_size=16
  - #### Eval 1
     - Model: Checkpoint-343
     - n-shot: 0
