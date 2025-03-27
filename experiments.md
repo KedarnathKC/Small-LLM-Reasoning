@@ -3202,3 +3202,36 @@
     - Model: Checkpoint-680
     - data: gsm8k train 
     - n-shot: 0
+   
+### exp-2.0.1
+ - Purpose: LLaMA 3.2-3B-Instruct predictions on feedback set using vLLM.
+
+### exp-2.0.2
+ - Purpose: LLaMA 3.1-8B-Instruct predictions on feedback set using vLLM.
+
+### exp-2.0.3
+ - Purpose: LLaMA 3.3-70B-Instruct predictions on feedback set using vLLM.
+
+### exp-2.0.4
+ - Purpose: LLaMA 3.2-3B-Instruct predictions on train set using vLLM.
+
+### exp-2.0.5
+ - Purpose: LLaMA 3.1-8B-Instruct predictions on train set using vLLM.
+
+### exp-2.0.6
+ - Purpose: LLaMA 3.2-3B predictions on train set using vLLM.
+
+### exp-2.0.7
+ - Purpose: LLaMA 3.1-8B predictions on train set using vLLM.
+
+### exp-2.0.8
+ - Purpose: LLaMA 3.2-3B predictions on feedback set using vLLM.
+
+### exp-2.0.9
+ - Purpose: LLaMA 3.1-8B predictions on feedback set using vLLM.
+
+### exp-2.1.1
+ - Purpose: LLaMA 3.3-70B-Instruct logits on LLaMA 3.2-3B-Instruct's generation from exp-2.0.1 using HF
+
+### exp-2.1.2
+ - Purpose: LLaMA 3.3-70B-Instruct logits on LLaMA 3.1-8B-Instruct's generation from exp-2.0.2 using HF
