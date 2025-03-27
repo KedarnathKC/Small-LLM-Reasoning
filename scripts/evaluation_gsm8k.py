@@ -108,7 +108,7 @@ def main():
     parser.add_argument("--model_path", type=str, default=None)
     parser.add_argument("--eval_data_path", type=str)
     # No longer require prompting_strategy,as we are using tokenized data directly, which handles 0-shot and 8-shot prompts. 
-    # parser.add_argument("--prompting_strategy", type=str, default=None)
+    parser.add_argument("--prompting_strategy", type=str, default=None)
     parser.add_argument("--max_tokens", type=int, default=512)
     parser.add_argument("--log_probs", type=int, default=0)
     parser.add_argument("--temperature", type=float, default=0)
@@ -136,7 +136,7 @@ def main():
     for checkpoint in checkpoints:
         # model_path = os.path.join(args.model_path, os.path.basename(checkpoint))
         model_path = checkpoint
-        output_path = f'./outputs/{args.exp_id}/eval_{eval_id}/generated_outputs_1.json'
+        output_path = f'./outputs/{args.exp_id}/eval_{eval_id}/generated_outputs.json'
 
         print(f"\nEvaluating model: {model_path}\n")
         generate(
