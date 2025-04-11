@@ -2,9 +2,10 @@ import os
 import re
 import torch
 import argparse
-from datasets import load_from_disk
+from datasets import load_from_disk, load_dataset
 from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer, AutoConfig
 from trl import  SFTConfig, SFTTrainer
+from small_llm_reasoning.data.utils import create_data_from_teacher_gen
 from small_llm_reasoning.trainer.sft_trainer import CustomizedSFTTrainer
 from trl.trainer import ConstantLengthDataset, DataCollatorForCompletionOnlyLM
 from peft import LoraConfig
@@ -16,38 +17,39 @@ os.environ['TRANSFORMERS_CACHE'] = cache_dir
 # Loading model
 hf_token = os.getenv("hf_token")
 
-# def formatting_prompts_func(examples):
-#     formatted_examples = []
-#     for i in range(len(examples['question'])):
-#         answer = format_answer(examples['answer'][i])
-#         text = f'<|start_header_id|>user<|end_header_id|>\n\nGiven the following problem, reason and give a final answer to the problem.\nProblem: {examples['question'][i]}\nYour response should end with "The final answer is [answer]" where [answer] is the response to the problem.\n<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{answer}'
-#         formatted_examples.append(text)
-#     return formatted_examples
-
+# Importing from small_llm_reasoning.data.utils
 def formatting_prompts_func(examples):
-    if isinstance(examples, dict) and not isinstance(examples['question'], list):
-        # Handle single example
-        answer = format_answer(examples['answer'])
-        text = f'<|start_header_id|>user<|end_header_id|>\n\nGiven the following problem, reason and give a final answer to the problem.\nProblem: {examples['question']}\nYour response should end with "The final answer is [answer]" where [answer] is the response to the problem.\n<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{answer}'
-        return [text]
-    else:
-        # Handle batch of examples
-        formatted_examples = []
-        for i in range(len(examples['question'])):
-            answer = format_answer(examples['answer'][i])
-            text = f'<|start_header_id|>user<|end_header_id|>\n\nGiven the following problem, reason and give a final answer to the problem.\nProblem: {examples['question'][i]}\nYour response should end with "The final answer is [answer]" where [answer] is the response to the problem.\n<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{answer}'
-            formatted_examples.append(text)
-        return formatted_examples
+    # print(f"[DEBUG] formatting input: {type(examples)}")
+    # print(f"[DEBUG] example: {examples}")
+    # print(f"[DEBUG] type(examples): {type(examples['question'])}")
+    answer = format_answer(examples['answer'])
+    text = f'<|start_header_id|>user<|end_header_id|>\n\nGiven the following problem, reason and give a final answer to the problem.\nProblem: {examples['question']}\nYour response should end with "The final answer is [answer]" where [answer] is the response to the problem.\n<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{answer}'
+    return text
+    # if isinstance(examples, dict) and not isinstance(examples['question'], list):
+    #     # Handle single example
+    #     answer = format_answer(examples['answer'])
+    #     text = f'<|start_header_id|>user<|end_header_id|>\n\nGiven the following problem, reason and give a final answer to the problem.\nProblem: {examples['question']}\nYour response should end with "The final answer is [answer]" where [answer] is the response to the problem.\n<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{answer}'
+    #     return text
+    # else:
+    #     # Handle batch of examples
+    #     formatted_examples = []
+    #     for i in range(len(examples['question'])):
+    #         answer = format_answer(examples['answer'][i])
+    #         text = f'<|start_header_id|>user<|end_header_id|>\n\nGiven the following problem, reason and give a final answer to the problem.\nProblem: {examples['question'][i]}\nYour response should end with "The final answer is [answer]" where [answer] is the response to the problem.\n<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{answer}'
+    #         formatted_examples.append(text)
+    #     return formatted_examples
 
 def format_answer(answer):
         answer = re.sub(r'<<.*?>>', '', answer)
         answer = answer.replace('####', 'The final answer is')
         return answer
 
-def finetune(model_name, train_data_path, output_dir, lora, epochs, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
+def finetune(model_name, train_data_path, teacher_data_path, remove_incorrect, output_dir, lora, epochs, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
     '''
     model_name: 
     train_data_path: 
+    teacher_data_path:
+    remove_incorrect: Remove incorrect teacher predictions from data
     output_dir:
     lora:
     epochs:
@@ -62,6 +64,11 @@ def finetune(model_name, train_data_path, output_dir, lora, epochs, lr, lr_sched
 
     # Loading data
     data_train= load_from_disk(train_data_path)
+
+    if teacher_data_path:
+        data_teacher=load_dataset('json',data_files=teacher_data_path)['train']
+        data_train=create_data_from_teacher_gen(data=data_train, teacher_data=data_teacher, remove_incorrects=remove_incorrect)
+        print('Teacher Generations replaced as answers')
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, token=hf_token, cache_dir=cache_dir)
     tokenizer.pad_token_id = tokenizer.eos_token_id
@@ -130,6 +137,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_name", type=str, default=None)
     parser.add_argument("--train_data_path", type=str, default=None)
+    parser.add_argument('--teacher_data_path', type=str, default=None)
+    parser.add_argument("--remove_incorrect", action="store_true", help="Set this flag to true", default=False)
     parser.add_argument("--output_dir", type=str, default=None)
     parser.add_argument("--lora", action="store_true", help="Set this flag to true", default=None)
     parser.add_argument("--epochs", type=int, default=1)
@@ -145,6 +154,8 @@ def main():
     finetune(
         model_name=args.model_name, 
         train_data_path=args.train_data_path, 
+        teacher_data_path=args.teacher_data_path,
+        remove_incorrect=args.remove_incorrect,
         output_dir=args.output_dir, 
         lora=args.lora,
         epochs=args.epochs, 

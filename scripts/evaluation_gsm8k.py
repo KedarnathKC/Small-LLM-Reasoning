@@ -58,17 +58,47 @@ def generate(model_path, eval_data_path, prompting_strategy, max_tokens, log_pro
         log_probs=log_probs
     )
 
-    generated_outputs = [
-        {
+    # generated_outputs = [
+    #     {
+    #         'input': tokenizer.decode(out.prompt_token_ids, skip_special_tokens=False),
+    #         'output': [ith_output.text for ith_output in out.outputs],
+    #         'token_ids': [list(ith_output.token_ids) for ith_output in out.outputs],
+    #         'log_probs': [
+    #             [token_log_probs[token_id].logprob for token_log_probs, token_id 
+    #             in zip(ith_output.logprobs, ith_output.token_ids)]
+    #             for ith_output in out.outputs
+    #         ],
+    #         'all_returned_log_probs': [
+    #             [
+    #                 {
+    #                     'token_id': token,
+    #                     'logprob': logprob.logprob,
+    #                     'rank': logprob.rank,
+    #                     'decoded_token': logprob.decoded_token
+    #                 }
+    #                 for token, logprob in token_log_probs.items()
+    #             ]
+    #             for ith_output in out.outputs
+    #             for token_log_probs in ith_output.logprobs
+    #         ]
+    #     }
+    #     for out in all_outputs
+    # ]
+
+    generated_outputs = []
+    for out in all_outputs:
+        entry = {
             'input': tokenizer.decode(out.prompt_token_ids, skip_special_tokens=False),
             'output': [ith_output.text for ith_output in out.outputs],
             'token_ids': [list(ith_output.token_ids) for ith_output in out.outputs],
-            'log_probs': [
+        }
+        if log_probs:
+            entry['log_probs'] = [
                 [token_log_probs[token_id].logprob for token_log_probs, token_id 
                 in zip(ith_output.logprobs, ith_output.token_ids)]
                 for ith_output in out.outputs
-            ],
-            'all_returned_log_probs': [
+            ]
+            entry['all_returned_log_probs'] = [
                 [
                     {
                         'token_id': token,
@@ -81,9 +111,8 @@ def generate(model_path, eval_data_path, prompting_strategy, max_tokens, log_pro
                 for ith_output in out.outputs
                 for token_log_probs in ith_output.logprobs
             ]
-        }
-        for out in all_outputs
-    ]
+        generated_outputs.append(entry)
+
 
     output_dir = os.path.dirname(output_path)
     if output_dir:  # Check if there is a directory part in the path
@@ -150,7 +179,7 @@ def main():
             n_gpus=args.n_gpus,
             output_path=output_path
         )
-        eval_id+=1
+        eval_id+=2
 
 
 if __name__=='__main__':
