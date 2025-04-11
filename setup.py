@@ -11,7 +11,7 @@ setup(
         "pandas",
         "numpy",
         "torch==2.4.0",
-        "transformers==4.48.1",
+        "transformers",
         "vllm==0.6.0",
         "vllm-flash-attn==2.6.1",
         "datasets==3.2.0"

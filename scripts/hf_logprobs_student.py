@@ -83,7 +83,7 @@ def get_logprobs(model_path, gt_data_path, tokenized_data_path, student_data_pat
                     'gt_answer':data_student['GT_Answer'][i+j],
                     'student_token_ids':data_student['token_ids'][i+j][0],
                     'student_reasoning':data_student['output'][i+j][0],
-                    'student_answer':data_student['model_answer'][i+j][0],
+                    'student_answer':data_student['model_answer'][i+j],
                     'student_correctness':data_student['score'][i+j],
                     'student_log_probs':logprobs
                 }
@@ -114,7 +114,7 @@ def main():
     parser.add_argument("--eval_id", type=str, help="Used in the output path, e.g., eval-1")
     args = parser.parse_args() 
 
-    output_path = f'./outputs/{args.exp_id}/{args.eval_id}/logprobs.json'
+    output_path = f'./outputs/{args.exp_id}/eval_{args.eval_id}/logprobs.json'
 
     get_logprobs(
         model_path=args.model_path,
