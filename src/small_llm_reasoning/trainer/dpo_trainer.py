@@ -327,24 +327,24 @@ class CustomDPOTrainer(DPOTrainer):
             epoch_iterator = iter(epoch_dataloader)
             # We chunkify the epoch iterator into gradient accumulation steps `n` batches
             remainder = steps_in_epoch % args.gradient_accumulation_steps
-            print(f'reminder: {remainder}')
+            # print(f'reminder: {remainder}')
             if remainder == 0:
                 remainder = args.gradient_accumulation_steps
             update_step = -1
             total_updates = steps_in_epoch // args.gradient_accumulation_steps + 1
             if args.gradient_accumulation_steps == 1:
                 total_updates -= 1
-            print(f'Epoch Being:{epoch}')
+            # print(f'Epoch Being:{epoch}')
             for _ in range(total_updates):
                 update_step += 1
                 num_batches = args.gradient_accumulation_steps if update_step != (total_updates - 1) else remainder
                 batch_samples, num_items_in_batch = self.get_batch_samples(epoch_iterator, num_batches, args.device)
                 for i, inputs in enumerate(batch_samples):
                     step += 1
-                    print(f'step: {step}')
+                    # print(f'step: {step}')
                     do_sync_step = (step + 1) % args.gradient_accumulation_steps == 0 or (step + 1) == steps_in_epoch
-                    print(f'do_sync_step: {do_sync_step}')
-                    print(f'steps_in_epoch: {steps_in_epoch}')
+                    # print(f'do_sync_step: {do_sync_step}')
+                    # print(f'steps_in_epoch: {steps_in_epoch}')
                     # Since we perform prefetching, we need to manually set sync_gradients
                     self.accelerator.gradient_state._set_sync_gradients(do_sync_step)
 
@@ -452,7 +452,7 @@ class CustomDPOTrainer(DPOTrainer):
 
                         model.zero_grad()
                         self.state.global_step += 1
-                        print(f'Updated global-step: {self.state.global_step}')
+                        # print(f'Updated global-step: {self.state.global_step}')
                         self.state.epoch = epoch + (step + 1 + steps_skipped) / steps_in_epoch
                         self.control = self.callback_handler.on_step_end(args, self.state, self.control)
                         self._maybe_log_save_evaluate(
@@ -492,8 +492,8 @@ class CustomDPOTrainer(DPOTrainer):
             self._maybe_log_save_evaluate(
                 tr_loss, grad_norm, model, trial, epoch, ignore_keys_for_eval, start_time, learning_rate=learning_rate
             )
-            print(f'Epoch End:{epoch}')
-            Kedar
+            # print(f'Epoch End:{epoch}')
+            
             if DebugOption.TPU_METRICS_DEBUG in self.args.debug:
                 if is_torch_xla_available():
                     # tpu-comment: Logging debug metrics for PyTorch/XLA (compile, execute times, ops, etc.)

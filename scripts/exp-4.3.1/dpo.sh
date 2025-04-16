@@ -4,7 +4,7 @@ hostname
 
 python scripts/dpo.py \
     --model_name "meta-llama/Llama-3.2-3B-Instruct" \
-    --train_data_path ./datasets/gsm8k/dpo/dpo_data_tr_prob_threshold/ \
+    --train_data_path ./datasets/gsm8k/dpo/dpo_data_with_teacher_gen \
     --output_dir ./outputs/exp-4.3.1/checkpoints/ \
     --add_special_tokens \
     --epochs 5 \
@@ -14,4 +14,4 @@ python scripts/dpo.py \
     --weight_decay 0.01 \
     --per_device_train_batch_size 4 \
     --gradient_accumulation_steps 4 \
-    --max_length 500 
+    --max_length 500
