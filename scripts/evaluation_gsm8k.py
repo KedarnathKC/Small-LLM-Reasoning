@@ -134,8 +134,9 @@ def generate(model_path, eval_data_path, prompting_strategy, max_tokens, log_pro
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_path", type=str, default=None)
-    parser.add_argument("--eval_data_path", type=str)
+    parser.add_argument("--model_path", type=str, default=None, required=True)
+    parser.add_argument("--eval_data_path", type=str, required=True)
+    parser.add_argument('--output_path', type=str, required=True)
     # No longer require prompting_strategy,as we are using tokenized data directly, which handles 0-shot and 8-shot prompts. 
     parser.add_argument("--prompting_strategy", type=str, default=None)
     parser.add_argument("--max_tokens", type=int, default=512)
@@ -165,7 +166,7 @@ def main():
     for checkpoint in checkpoints:
         # model_path = os.path.join(args.model_path, os.path.basename(checkpoint))
         model_path = checkpoint
-        output_path = f'./outputs/{args.exp_id}/eval_{eval_id}/generated_outputs.json'
+        output_path = f'{args.output_path}/eval_{eval_id}/generated_outputs.json'
 
         print(f"\nEvaluating model: {model_path}\n")
         generate(
@@ -179,7 +180,7 @@ def main():
             n_gpus=args.n_gpus,
             output_path=output_path
         )
-        eval_id+=2
+        eval_id+=1
 
 
 if __name__=='__main__':
