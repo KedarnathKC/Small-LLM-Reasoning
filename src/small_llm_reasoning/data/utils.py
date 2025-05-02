@@ -18,29 +18,39 @@ def get_prob(teacher_log_prob):
     teacher_prob=np.exp(teacher_logprob)
     return teacher_prob
 
-def create_data_from_teacher_gen(data, teacher_data, remove_incorrects):
+def create_sft_data_with_teacher_gen(data_path, teacher_data_path, output_path, input_col, output_col, remove_incorrects, incorrect_threshold=0):
+    data = load_from_disk(data_path)
+    teacher_data = load_dataset('json',data_files=teacher_data_path)['train']
+
     teacher_answers=[]
+    teacher_rationale=[]
     teacher_scores=[]
 
     for i in range(teacher_data.num_rows):
-        teacher_answers.append(teacher_data['output'][i][0])
+        teacher_answers.append(teacher_data['model_answer'][i]) 
+        teacher_rationale.append(teacher_data['model_rationale'][i])
         teacher_scores.append(teacher_data['score'][i])
 
-
-    questions=data['question']
+    questions=data[input_col]
     new_data = {
-        'question': questions,
-        'answer': teacher_answers,
+        input_col: questions,
+        output_col: teacher_answers,
+        'rationale': teacher_rationale,
         'score': teacher_scores
     }
 
     data= Dataset.from_dict(new_data)
 
     if remove_incorrects:
-        data= data.filter(lambda x: x['score']==1)
+        # Dont use >=, as in gsm8k where score is 0 or 1, and incorrect_threshold will be 0.
+        data= data.filter(lambda x: x['score']>incorrect_threshold)
     
+    # Save the data
     data=data.remove_columns('score')
-    return data
+    data.save_to_disk(output_path)
+    print(f'Created the dataset for SFT using teacher outputs as output for the given prompt, using all data with remove_incorrects={remove_incorrects}')
+    print(f'Saved at: {output_path}')
+    return 
 
 def create_preference_data_with_teacher_gen(data_path, teacher_data_path, student_data_path, output_path, remove_incorrects=True):
     '''

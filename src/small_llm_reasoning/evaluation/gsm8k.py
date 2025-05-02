@@ -65,7 +65,6 @@ def get_score(data_path, output_path):
     '''
     test = pd.DataFrame(load_from_disk(data_path))    
     df = pd.read_json(output_path)
-    # df.drop(columns=['score','model_answer'],inplace=True)
     df['model_answer'] = df.apply(get_answer_model,axis=1)
     df['GT_Answer'] = test.apply(get_answer_dataset, axis=1)
     # print(f'DF Shape: {df.shape}, Test Shape: {test.shape}')

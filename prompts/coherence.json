@@ -1,0 +1,53 @@
+{
+    "task_prompt":"Enhance the cohesion of the text by initially providing a response, followed by an explanation. Your response should start with \"### Revised Text: [answer]\", where answer is the revisied text to the input. Please use this template for the explanation: \"The word X should be deleted/inserted/replaced by Y because ...\"",
+    "few_shot":[
+        {
+            "id":"1911.08241",
+            "input":"In this paper, we showed that using a dictionary of complex sparse codes, learned from natural scenes based on efficient coding theory, as the front-end for these methods can improve their performance in neural response prediction.",
+            "reference":"In this paper, we showed that using a dictionary of complex sparse codes, which are learned from natural scenes based on efficient coding theory, as the front-end for these methods can improve their performance in neural response prediction.",
+            "rationale":"The word \"\" should be replaced by \"which are\" because it introduces a relative clause that clarifies and connects the description \"learned from natural scenes\" to \"complex sparse codes,\" thereby enhancing the cohesion and grammatical structure of the sentence."
+        },
+        {
+            "id":"35325932",
+            "input":"While traditional Chinese mythology depicted cooking and agriculture as key elements of civilization, the Daoists created a \"counter-narrative\" (Campany 2005:16) to justify the idea of grain avoidance.",
+            "reference":"While traditional Chinese mythology depicted cooking and agriculture as key elements of civilization, the Daoists created a \"counter-narrative\" to justify the idea of grain avoidance.",
+            "rationale":"The word (Campany 2005:16) should be deleted because it is a parenthetical citation that interrupts the flow of the sentence. Removing it enhances textual cohesion by allowing the reader to focus on the narrative without distraction."
+        },
+        {
+            "id":"28620682",
+            "input":"Picker Lingo, video on history.com (retrieved 29 August 2010) David Densmore frequently uses the term to describe things that actually don't fit the definition of a \"honey hole.\"",
+            "reference":"Picker Lingo, video on history.com (retrieved 29 August 2010) ",
+            "rationale":"The phrase David Densmore frequently uses the term to describe things that actually don't fit the definition of a \"honey hole.\" should be deleted because it is unnecessary in the context of the revised sentence and detracts from the cohesion and clarity of the reference citation."
+        },
+        {
+            "id":"119984",
+            "input":"The strike call is aimed at both the private and the public sectors , and would affect public services like hospitals, schools, mail, Air France, rail company SNCF and national broadcasting as well as banks, supermarkets and the stock exchange.",
+            "reference":"The strike call is aimed at both the private and the public sectors . It would affect public services like hospitals, schools, mail, Air France, rail company SNCF and national broadcasting as well as banks, supermarkets and the stock exchange.",
+            "rationale":"The word \",\" should be replaced by \".\" because the sentence is being split into two independent clauses for better readability and structure.\nThe word \"and\" should be replaced by \"It\" because the new sentence needs a subject to maintain grammatical completeness and clarity."
+        },
+        {
+            "id":"0707.3642",
+            "input":"Efficient numerical methods for calculating <I> show that in the infinite system size limit it exhibits a discontinuity at parameter values corresponding to critical RBNs and that for finite systems it peaks near the critical value, but slightly in the disordered regime for typical parameter variations.",
+            "reference":"Efficient numerical methods for calculating <I> show that in the infinite system size limit it exhibits a discontinuity at parameter values corresponding to critical RBNs . For finite systems it peaks near the critical value, but slightly in the disordered regime for typical parameter variations.",
+            "rationale":"The word \"and\" should be deleted because the sentence is being split into two independent clauses to improve clarity.\nThe phrase \"that for\" should be replaced by \". For\" because this change separates the compound sentence into two clearer, more concise sentences, enhancing the cohesion and readability of the text."
+        },
+        {
+            "id":"39170092",
+            "input":"Poston, J. M., Hanson, W. E. (2010).",
+            "reference":"Hanson, W. E. (2010).",
+            "rationale":"The word Poston, J. M., should be deleted because the target sentence omits this author, likely to reflect a change in authorship or to focus solely on Hanson, W. E. in the revised citation."
+        },
+        {
+            "id":"1708.07609",
+            "input":"The quality of clustering result is measured by a novel clique-based index, which is innovated from the modularity index proposed in Newman 2006%DIFDELCMD < ]%%% . We design an effective algorithm based on recursive bipartition in order to maximize the objective function of the proposed index.",
+            "reference":"The quality of clustering result is measured by a novel clique-based index, which is innovated from the modularity index proposed in Newman 2006%DIFDELCMD < ]%%% . We design an effective algorithm based on recursive bipartition to maximize an objective function of the proposed index.",
+            "rationale":"The phrase \"in order\" should be deleted because it is unnecessary and its removal results in a more concise sentence without changing the meaning.\nThe word \"the\" should be replaced by \"an\" because the sentence refers to one possible objective function among potentially many, making the indefinite article more appropriate."
+        },
+        {
+            "id":"1406.7577",
+            "input":"Within a timeframe of 104 days , a total of 161,200 Twitter posts containing \"bitcoin\" in combination with positiveor negative sentiments and signals of uncertainty has been collected . Positive and negative sentiments were ex-ante filtered with the help of API queries, by using identifiers such as the words \"happy , love, fun, good\" or \"bad , sad, unhappy\" respectively.",
+            "reference":"Within a timeframe of 104 days , a total of 161,200 Twitter posts containing \"bitcoin\" in combination with positiveor negative sentiments and signals of uncertainty has been collected . Positive and negative sentiments were ex-ante filtered with the help of API queries, by using identifiers such as the words \"happy , love, fun, good\" or \"bad \", \"sad\" and \" unhappy\" respectively.",
+            "rationale":"The word , should be replaced by \",\" because quotation marks are needed to delimit the sentiment words consistently with the rest of the sentence.\nThe word sad, should be replaced by \"sad\" and because it separates the items in a list and correctly formats \"sad\" with quotation marks, while introducing \"and\" for grammatical completeness."
+        }
+    ]
+}

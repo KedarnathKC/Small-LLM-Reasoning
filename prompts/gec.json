@@ -1,0 +1,6 @@
+{
+    "task_prompt":"Given an input, the goal is to detect and correct the grammatical errors of all error types present in the sentence and return the reasoning first and then the corrected sentence.\n\nYour response should end with \"The corrected text is [answer]\" where [answer] is the grammatically correct version of the input sentence.",
+    "system_msg": "You are an expert in removing subjective biases in texts.",
+    "user_msg": "Instruction:\n{instruction}\n\nInput:\n{question}\n\n",
+    "assistant_msg": "{rationale} The corrected text is {response}\n"
+}

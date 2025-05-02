@@ -21,6 +21,26 @@ and call super.__int__() wont that be enough?
 '''
 
 class CustomizedSFTTrainer(SFTTrainer):
+    # Added _custom_batch_sampler
+    def __init__(self, *args, batch_sampler=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._custom_batch_sampler = batch_sampler  
+
+    # Overrides the default trainers get_train_dataloader to help with sampling of data using thresholding
+    def get_train_dataloader(self):
+        if self._custom_batch_sampler:
+            # Use custom sampling strategy
+            print('Using Custom Sampling Strategy')
+            return DataLoader(
+                self.train_dataset,
+                batch_sampler=self._custom_batch_sampler,
+                collate_fn=self.data_collator
+            )
+        else:
+            # Fall back to default SFTTrainer behavior
+            print('Using default get_train_dataloader() function')
+            return super().get_train_dataloader()
+    
     # Fixed the max_steps calculation
     def set_initial_training_values(
         self, args: TrainingArguments, dataloader: DataLoader, total_train_batch_size: int
@@ -83,6 +103,7 @@ class CustomizedSFTTrainer(SFTTrainer):
         )
 
     # Fixed the calculation of reminder
+    # Original reminder implementation: https://github.com/huggingface/transformers/blob/v4.51.2/src/transformers/trainer.py#L2504C25-L2504C38
     def _inner_training_loop(
         self, batch_size=None, args=None, resume_from_checkpoint=None, trial=None, ignore_keys_for_eval=None
     ):
@@ -336,7 +357,7 @@ class CustomizedSFTTrainer(SFTTrainer):
             epoch_iterator = iter(epoch_dataloader)
             # We chunkify the epoch iterator into gradient accumulation steps `n` batches
             remainder = steps_in_epoch % args.gradient_accumulation_steps
-            print(f'reminder: {remainder}')
+            # print(f'reminder: {remainder}')
             if remainder == 0:
                 remainder = args.gradient_accumulation_steps
             update_step = -1
@@ -461,7 +482,7 @@ class CustomizedSFTTrainer(SFTTrainer):
 
                         model.zero_grad()
                         self.state.global_step += 1
-                        print(f'Updated global-step: {self.state.global_step}')
+                        # print(f'Updated global-step: {self.state.global_step}')
                         self.state.epoch = epoch + (step + 1 + steps_skipped) / steps_in_epoch
                         self.control = self.callback_handler.on_step_end(args, self.state, self.control)
                         self._maybe_log_save_evaluate(

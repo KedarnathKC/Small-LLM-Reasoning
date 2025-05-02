@@ -1,12 +1,15 @@
 import os
 import re
+import json
 import torch
 import argparse
-from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
+from peft import LoraConfig
 from trl import  SFTConfig, SFTTrainer
+from datasets import load_from_disk, load_dataset
+from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 from small_llm_reasoning.trainer.sft_trainer import CustomizedSFTTrainer
 from trl.trainer import ConstantLengthDataset, DataCollatorForCompletionOnlyLM
-from peft import LoraConfig
+
 
 cache_dir = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache'
 os.environ['TRANSFORMERS_CACHE'] = cache_dir
@@ -14,45 +17,52 @@ os.environ['TRANSFORMERS_CACHE'] = cache_dir
 # Reading HF Token
 hf_token = os.getenv("hf_token")
 
-def formatting_prompts_func(examples):
-    answer = format_answer(examples['answer'])
-    # text = f'<|start_header_id|>user<|end_header_id|>\n\nGiven the following problem, reason and give a final answer to the problem.\nProblem: {examples['question']}\nYour response should end with "The final answer is [answer]" where [answer] is the response to the problem.\n<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{answer}'
-    text = f'<|start_header_id|>user<|end_header_id|>\n\nGiven the following problem, reason and give a final answer to the problem.\nProblem: {examples['question']}\nYour response should end with "The final answer is [answer]" where [answer] is the response to the problem.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{answer}<|eot_id|>'
-    
+# We will need formatting_prompt_func as for our M4, M5, M6 methods, if we use standardard sft dataset formats, the trainer will call apply_chat_template which will add an additional
+# assistant token that the assistant needs to complete. which wont work for our completion prompts used in M4, M5, M6. 
+def formatting_prompts_func_gsm8k(example):
+    answer = format_answer_gsm8k(example['answer'])
+    text = f'<|start_header_id|>user<|end_header_id|>\n\nGiven the following problem, reason and give a final answer to the problem.\nProblem: {example['question']}\nYour response should end with "The final answer is [answer]" where [answer] is the response to the problem.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{answer}<|eot_id|>'
     return text
 
-def format_answer(answer):
+def format_answer_gsm8k(answer):
         answer = re.sub(r'<<.*?>>', '', answer)
         answer = answer.replace('####', 'The final answer is')
         return answer
 
-def finetune(model_name, train_data, response_template, output_dir, add_special_tokens, lora, epochs, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
-    '''
-    model_name: 
-    train_data: 
-    response_template:
-    output_dir:
-    add_special_tokens:
-    lora:
-    epochs:
-    lr:
-    lr_scheduler_type:
-    warmup:
-    weight_decay:
-    per_device_train_batch_size:
-    gradient_accumulation_steps: 
-    max_seq_length: 
-    '''
+def formatting_prompts_func_wnc(example):
+    with open('./prompts/neutralization.json') as fp:
+        task_prompt = json.load(fp)
+    system_msg= f'<|start_header_id|>system<|end_header_id|>\n\n{task_prompt['system_msg']}<|eot_id|>'
+    user_msg= f'<|start_header_id|>user<|end_header_id|>\n\n{task_prompt['user_msg'].format(instruction=task_prompt['task_prompt'], question=example['input'])}<|eot_id|>'
+    rationale= example['rationale'] if 'rationale' in example else '' # vanilla sft using off-the-shelf data doesn't have rationale
+    assistant_msg=f'<|start_header_id|>assistant<|end_header_id|>\n\n{task_prompt['assistant_msg'].format(rationale=rationale, response=example['edits'])}<|eot_id|>'    
+    text= system_msg + user_msg + assistant_msg
+    return text
+
+formatting_funcs = {
+    'gsm8k': formatting_prompts_func_gsm8k,
+    'wnc': formatting_prompts_func_wnc
+}
+
+def finetune(model_name, train_data_path, output_dir, formatting_func, add_special_tokens, lora, epochs, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
+    # Loading data
+    train_data= load_from_disk(train_data_path)
+
     tokenizer = AutoTokenizer.from_pretrained(model_name, token=hf_token, cache_dir=cache_dir)
     tokenizer.pad_token_id = tokenizer.eos_token_id
 
-    # response_template = "<|start_header_id|>assistant<|end_header_id|>\n\n"
-    if not response_template:
-        print("response_template is required. Stopping the program....")
-        return
-
+    # TODO:
+    # Currently hard-coding the response template. Will require change when we run M4,M5,M6
+    # if not response_template:
+    #     print("response_template is required. Stopping the program....")
+    #     return
+    response_template = "<|start_header_id|>assistant<|end_header_id|>\n\n"
+    
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
     
+    # Deciding which formatting_prompt_func to use
+    formatting_prompts_func= formatting_funcs[formatting_func]
+
     # Set up the trainer
     training_args = SFTConfig(
         model_init_kwargs={
@@ -112,11 +122,13 @@ def finetune(model_name, train_data, response_template, output_dir, add_special_
     
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_name", type=str, default=None)
+    parser.add_argument("--model_name", type=str, required=True, default=None)
     parser.add_argument("--train_data_path", type=str, default=None)
-    parser.add_argument('--teacher_data_path', type=str, default=None)
-    parser.add_argument("--remove_incorrect", action="store_true", help="Set this flag to true", default=False)
+    # Directly hard-coding response-template in the start_finetuning func, due to the issue raised below.
+    # parser.add_argument('--response_template', type=str, default=None) 
     parser.add_argument("--output_dir", type=str, default=None)
+    parser.add_argument("--formatting_func", type=str, choices=list(formatting_funcs.keys()), required=True,help='Function to call to format the data during SFT')
+    parser.add_argument("--add_special_tokens", action='store_true', help='Set this flag to true', default=True)
     parser.add_argument("--lora", action="store_true", help="Set this flag to true", default=None)
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--lr", type=float, default=2e-5)
@@ -127,13 +139,23 @@ def main():
     parser.add_argument("--gradient_accumulation_steps", type=int, default=1)
     parser.add_argument("--max_seq_length", type=int, default=500)
     args = parser.parse_args()
+
+    # Need help from Wenlong to verify if this is correct. 99% sure it is correct
+    # # Doing this as passing response_template from command line makes the newline character \\n rather than \n. 
+    # # Which was causing a issue.
+    # if args.response_template:
+    #     # Replace literal `\n` with newline character
+    #     print(f'Before: {args.response_template}')
+    #     args.response_template = args.response_template.encode('utf-8').decode('unicode_escape')
+    #     print(f'After: {args.response_template}')
     
     finetune(
         model_name=args.model_name, 
         train_data_path=args.train_data_path, 
-        teacher_data_path=args.teacher_data_path,
-        remove_incorrect=args.remove_incorrect,
+        # response_template=args.response_template
         output_dir=args.output_dir, 
+        formatting_func=args.formatting_func,
+        add_special_tokens=args.add_special_tokens,
         lora=args.lora,
         epochs=args.epochs, 
         lr=args.lr, 

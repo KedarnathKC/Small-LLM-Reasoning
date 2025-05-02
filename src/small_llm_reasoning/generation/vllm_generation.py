@@ -19,9 +19,12 @@ def llama_forward(
     max_tokens: int = 300,  # Generation length
     temperature: float = 0.1,
     n_samples: int = 8,
-    n_gpus: int = 8,
+    n_gpus: int = 4,
     log_probs:int | None = None
 ) -> Optional[Sequence[str]]:
+
+    print(f"Number of gpus: {n_gpus}")
+
     assert model is not None or model_path is not None, "model or model_path must be provided"
 
     if temperature == 0.0:

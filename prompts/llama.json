@@ -1,0 +1,6 @@
+{
+    "description": "Template used by Alpaca-LoRA.",
+    "system_msg": "You are an expert in removing subjective biases in texts.",
+    "user_msg": "Instruction:\n{instruction}\n\nInput:\n{question}\n\n",
+    "assistant_msg": "{rationale} The neutralized text is  {response}\n"
+}

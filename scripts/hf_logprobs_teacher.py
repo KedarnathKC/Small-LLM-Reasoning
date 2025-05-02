@@ -50,7 +50,11 @@ def get_logprobs(model_path, tokenized_data_path, student_data_path, teacher_dat
         examples=[]
         questions=[]
         answers=[]
-        for j in range(i,i+batch_size):
+        # make sure we don’t go past the end:
+        end = min(i + batch_size, data_student.num_rows)
+        for j in range(i, end):
+            # We are using token_ids since all models are from the same family, they will have similar tokenizer's. If that is not the case then you need to 
+            # concatinate the models prompt and output using untokenized text.   
             question = torch.tensor(data_tokenized['input_ids'][j]['prompt_token_ids'], dtype=torch.long).unsqueeze(0)
             answer = torch.tensor(data_student['token_ids'][j][0], dtype=torch.long).unsqueeze(0)
             examples.append(torch.cat((question, answer), dim=1).squeeze(dim=0))
@@ -100,23 +104,23 @@ def main():
     parser.add_argument("--tokenized_data_path", type=str, default=None)
     parser.add_argument("--student_data_path", type=str, default=None) 
     parser.add_argument("--teacher_data_path", type=str, default=None)
+    parser.add_argument("--student_logprobs_path", type=str, required=True)
+    parser.add_argument('--output_path', type=str, required=True)
     parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument('--torch_dtype', type=str, default='bfloat16')
-    parser.add_argument("--exp_id", type=str, help="Used in the output path, e.g., exp-1.1")
-    parser.add_argument("--eval_id", type=str, help="Used in the output path, e.g., eval-1")
+    # We no longer require exp-id as we now give the explicit path till the exp directory.
+    # parser.add_argument("--exp_id", type=str, help="Used in the output path, e.g., exp-1.1")
+    # parser.add_argument("--eval_id", type=str, help="Used in the output path, e.g., eval-1")
     args = parser.parse_args() 
-
-    output_path = f'./outputs/{args.exp_id}/eval_{args.eval_id}/logprobs1.json'
-    student_logprobs_path = f'./outputs/{args.exp_id}/eval_{args.eval_id}/logprobs.json'
 
     get_logprobs(
         model_path=args.model_path,
         tokenized_data_path=args.tokenized_data_path,
         student_data_path=args.student_data_path,
         teacher_data_path=args.teacher_data_path,
-        student_logprobs_path=student_logprobs_path,
+        student_logprobs_path=args.student_logprobs_path,
+        output_path=args.output_path,
         batch_size=args.batch_size,
-        output_path=output_path,
         torch_dtype=args.torch_dtype
         )
 

@@ -1,0 +1,65 @@
+{
+ "task_prompt":"Make the text more fluent and grammatical by initially providing a response, followed by an explanation. Your response should start with \"### Revised Text: [answer]\", where answer is the revisied text to the input. Please use this template for the explanation: \"The word X should be deleted/inserted/replaced by Y because ...\"",   
+ "few_shot":[
+        {
+            "id":"106630",
+            "input":"Finally, for state custody to be allowed there must also have been \"reasonable efforts have been made to enable the child to return home . \"  A lower court was given 10 days to make a decision on whether the above requirements are met.",
+            "reference":"Finally, for state custody to be allowed there must also have been \"reasonable efforts have been made to enable the child to return home . \" . A lower court was given 10 days to make a decision on whether the above requirements are met.",
+            "rationale":"The word . should be inserted after the closing quotation mark because the quoted sentence needs to be properly punctuated as a complete statement."
+        },
+        {
+            "id":"1209.5429",        
+            "input":"It is also possible to implement new algorithmsthat can be easily integrated into the package , since EDAs are defined using S4 classes with generic functions for its main components.",
+            "reference":"It is also possible to implement new algorithmsthat can be easily integrated into the package , since EDAs are defined using S4 classes with generic functions for their main components.",
+            "rationale":"The word its should be replaced by their because the pronoun needs to agree in number with the plural noun EDAs, which requires the plural possessive pronoun their instead of the singular its." 
+        },
+        {
+            "id":"30778",
+            "input":"Also in the second period, Saginaw's Tyson Gimblett and Ottawa's Joe Grimaldi held a fistfight on the ice . Gimblett was charged with a two minute instigator penalty, along with a five minute fighting penalty and a ten minute misconduct during the incident ;",
+            "reference":"Also in the second period, Saginaw's Tyson Gimblett and Ottawa's Joe Grimaldi held a fistfight on the ice . Gimblett was charged with a two minute instigator penalty, along with a five minute fighting penalty and a ten minute misconduct during the incident .",
+            "rationale":"The word ; should be replaced by . because the semicolon was incorrectly used to end the sentence. A period is more appropriate to mark the end of a complete thought and maintain standard punctuation usage."
+        },
+        {
+            "id":"1911.12789",
+            "input":"In this paper, we present an analysis of the effect of penalty term in the mixed discontinuous Galerkin finite element method for the biharmonic equation .",
+            "reference":"In this paper, we present an analysis of the effect of penalty term in the mixed Discontinuous Galerkin Finite Element Method for the biharmonic equation .",
+            "rationale":"The word discontinuous should be replaced by Discontinuous because it is part of a proper noun referring to a specific method name and should be capitalized.\nThe phrase finite element method should be replaced by Finite Element Method because it is a recognized formal name of a numerical technique and thus should be capitalized."
+        },
+        {
+            "id":"38862587",
+            "input":"He is regarded as one of Europe ’ s finest jazz pianists, covering the full spectrum of jazz styles from his early days of Boogie-woogie to Chicago traditional Jazz, swing and contemporary jazz.",
+            "reference":"He is regarded as one of Europe ' s finest jazz pianists, covering the full spectrum of jazz styles from his early days of Boogie-woogie to Chicago traditional Jazz, swing and contemporary jazz.",
+            "rationale":"The word ’ should be replaced by ' because the standard ASCII apostrophe ' is preferred in formal writing and ensures consistency in punctuation, especially for possessive forms like Europe's."
+        },
+        {
+            "id":"118937",
+            "input":"\"However, since Palestinians have no means of self-defence against the most powerful military force in the Middle East , we particularly call on Israel to end its brutal assault on the vulnerable Palestinian people of Gaza and to reconsider its rejection of the UN Security Council's call for a ceasefire,\" the statement said.",
+            "reference":"\"However, since Palestinians have no means of self-defence against the most powerful military force in the Middle East . We particularly call on Israel to end its brutal assault on the vulnerable Palestinian people of Gaza and to reconsider its rejection of the UN Security Council's call for a ceasefire,\" the statement said.",
+            "rationale":"The word \", we\" should be replaced by \". We\" because the sentence structure changes from a complex sentence to two separate sentences, and \"We\" should start a new sentence with a capital letter following the period for grammatical correctness."
+        },
+        {
+            "id":"1773445",
+            "input":"The schedule, due to start on January 12, is unaffected.",
+            "reference":"The schedule, due to start on Jan. 12, is unaffected.",
+            "rationale":"The word January should be replaced by Jan. because abbreviating month names is a common stylistic convention in dates, especially in journalistic or formal written contexts where brevity is preferred."
+        },
+        {
+            "id":"22041110",
+            "input":"The LAPD called for back-up and arrested a number of rioters.",
+            "reference":"The LAPD called for backup and arrested several rioters.",
+            "rationale":"The word back-up should be replaced by backup because backup is the correct noun form when referring to additional support, especially in police or emergency contexts.\nThe phrase a number of should be replaced by several because several is more concise and stylistically preferred for fluency and clarity."
+        },
+        {
+            "id":"39512776",
+            "input":"Earliest Chinese hair stick \"Ji\", unearthed in Shanxi Province's Zhou dynasty's relic site .",
+            "reference":"Earliest Chinese hair stick \"Ji\", unearthed in Shanxi Province's Zhou dynasty's relic site",
+            "rationale":"The word . should be replaced by , because the sentence is intended to continue or is part of a larger structure; a comma maintains the grammatical flow, while a period would prematurely end the sentence."
+        },
+        {
+            "id":"1912.13181",
+            "input":"Detailed morphological information of the flow field and thermodynamic nonequilibrium behavior around the interfaces in a two-miscible-fluid system are delineated.",
+            "reference":"Detailed morphological information of the flow field and thermodynamic nonequilibrium behavior around the interface in a miscible two-fluid system are delineated.",
+            "rationale":"The word interfaces should be replaced by interface because the context refers to a single boundary between the two fluids, making the singular form more appropriate.\nThe phrase two-miscible-fluid should be replaced by miscible two-fluid because the revised order correctly applies the adjective miscible to the compound noun two-fluid system, improving clarity and grammatical structure."
+        }
+    ] 
+}

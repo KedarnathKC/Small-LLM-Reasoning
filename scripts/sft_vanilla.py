@@ -3,7 +3,7 @@ import argparse
 from datasets import load_from_disk
 from sft import finetune
 
-def start_finetuning(model_name, train_data_path, response_template, output_dir, add_special_tokens, lora, epochs, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
+def start_finetuning(model_name, train_data_path, output_dir, add_special_tokens, lora, epochs, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
     print('Loading data...')
     train_data=load_from_disk(train_data_path)
     print('Data loaded')
@@ -34,7 +34,8 @@ def main():
     
     parser.add_argument("--model_name", type=str, default=None)
     parser.add_argument("--train_data_path", type=str, default=None)
-    parser.add_argument('--response_template', type=str, default=None)
+    # Directly hard-coding response-template in the start_finetuning func, due to the issue raised below.
+    # parser.add_argument('--response_template', type=str, default=None) 
     parser.add_argument("--output_dir", type=str, default=None)
     parser.add_argument("--add_special_tokens", action='store_true', help='Set this flag to true', default=False)
     parser.add_argument("--lora", action="store_true", help="Set this flag to true", default=False)
@@ -61,7 +62,7 @@ def main():
     start_finetuning(
         model_name=args.model_name, 
         train_data_path=args.train_data_path, 
-        response_template=args.response_template,
+        # response_template=args.response_template,
         output_dir=args.output_dir, 
         add_special_tokens=args.add_special_tokens,
         lora=args.lora,

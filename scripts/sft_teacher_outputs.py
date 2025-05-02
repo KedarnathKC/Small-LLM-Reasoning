@@ -27,7 +27,7 @@ def create_data_from_teacher_gen(data, teacher_data, remove_incorrects):
     data=data.remove_columns('score')
     return data
 
-def start_finetuning(model_name, train_data_path, teacher_data_path, remove_incorrect, response_template, output_dir, add_special_tokens, lora, epochs, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
+def start_finetuning(model_name, train_data_path, teacher_data_path, remove_incorrect, output_dir, add_special_tokens, lora, epochs, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
     print('Loading data...')
     train_data=load_from_disk(train_data_path)
     teacher_data=load_dataset('json',data_files=teacher_data_path)['train']
@@ -66,7 +66,8 @@ def main():
     
     parser.add_argument("--model_name", type=str, default=None)
     parser.add_argument("--train_data_path", type=str, default=None)
-    parser.add_argument('--response_template', type=str, default=None)
+    # Directly hard-coding response-template in the start_finetuning func, due to the issue raised below.
+    # parser.add_argument('--response_template', type=str, default=None) 
     parser.add_argument("--output_dir", type=str, default=None)
     parser.add_argument('--teacher_data_path', type=str, default=None)
     parser.add_argument("--remove_incorrect", action="store_true", help="Set this flag to true", default=False)
@@ -95,7 +96,7 @@ def main():
     start_finetuning(
         model_name=args.model_name, 
         train_data_path=args.train_data_path, 
-        response_template=args.response_template,
+        # response_template=args.response_template,
         output_dir=args.output_dir, 
         teacher_data_path=args.teacher_data_path,
         remove_incorrect=args.remove_incorrect,

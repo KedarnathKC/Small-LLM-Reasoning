@@ -69,7 +69,7 @@ def create_data_from_teacher_gen_with_sampling(data, teacher_data, student_data,
     data = concatenate_datasets([sampled_below, sampled_above])
     return data.shuffle(seed=seed)
 
-def start_finetuning(model_name, train_data_path, teacher_data_path, student_data_path, sampling_ratio, remove_incorrect, response_template, output_dir, add_special_tokens, lora, epochs, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
+def start_finetuning(model_name, train_data_path, teacher_data_path, student_data_path, sampling_ratio, remove_incorrect, output_dir, add_special_tokens, lora, epochs, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
     print('Loading data...')
     train_data=load_from_disk(train_data_path)
     teacher_data=load_dataset('json',data_files=teacher_data_path)['train']
@@ -119,7 +119,8 @@ def main():
     parser.add_argument("--train_data_path", type=str, default=None)
     parser.add_argument("--student_data_path", type=str, default=None)
     parser.add_argument('--sampling_ratio', type=float, default=0)
-    parser.add_argument('--response_template', type=str, default=None)
+    # Directly hard-coding response-template in the start_finetuning func, due to the issue raised below.
+    # parser.add_argument('--response_template', type=str, default=None) 
     parser.add_argument("--output_dir", type=str, default=None)
     parser.add_argument('--teacher_data_path', type=str, default=None)
     parser.add_argument("--remove_incorrect", action="store_true", help="Set this flag to true", default=False)
@@ -150,7 +151,7 @@ def main():
         train_data_path=args.train_data_path, 
         student_data_path=args.student_data_path,
         sampling_ratio=args.sampling_ratio,
-        response_template=args.response_template,
+        # response_template=args.response_template,
         output_dir=args.output_dir, 
         teacher_data_path=args.teacher_data_path,
         remove_incorrect=args.remove_incorrect,

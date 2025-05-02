@@ -32,18 +32,6 @@ def generate(model_path, eval_data_path, prompting_strategy, max_tokens, log_pro
     '''
     # Loading data
     data = load_from_disk(eval_data_path)
-
-    # No longer required to prepare prompts,as we are using tokenized data directly, which handles 0-shot and 8-shot prompts. 
-    # prompts = []
-    # for i in tqdm(range(0, len(data["question"])), desc="Processing questions"):
-    #     prompt = [
-    #         {
-    #             'role': 'user',
-    #             'content': f'Given the following problem, reason and give a final answer to the problem.\nProblem: {data["question"][i]}\nYour response should end with "The final answer is [answer]" where [answer] is the response to the problem.\n'
-    #         }
-    #     ]
-    #     prompt = eight_shot_messages + prompt if prompting_strategy == '8-shot' else prompt
-    #     prompts.append(prompt)
         
     tokenizer = AutoTokenizer.from_pretrained(model_path, token=hf_token, cache_dir=cache_dir)
     tokenizer.pad_token_id = tokenizer.eos_token_id
