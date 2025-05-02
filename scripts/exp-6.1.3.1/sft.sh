@@ -13,6 +13,6 @@ python scripts/sft.py \
     --lr_scheduler_type cosine \
     --weight_decay 0.01 \
     --warmup 0.1 \
-    --per_device_train_batch_size 4 \
-    --gradient_accumulation_steps 4\
+    --per_device_train_batch_size 1 \
+    --gradient_accumulation_steps 16\
     --max_seq_length 500

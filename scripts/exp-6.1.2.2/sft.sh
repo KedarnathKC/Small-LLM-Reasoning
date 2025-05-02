@@ -9,6 +9,7 @@ python scripts/sft.py \
     --formatting_func wnc \
     --add_special_tokens \
     --epochs 5 \
+    --lora \
     --lr 1e-5 \
     --lr_scheduler_type cosine \
     --weight_decay 0.01 \
