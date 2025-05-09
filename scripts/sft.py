@@ -8,6 +8,7 @@ from trl import  SFTConfig, SFTTrainer
 from datasets import load_from_disk, load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 from small_llm_reasoning.trainer.sft_trainer import CustomizedSFTTrainer
+from small_llm_reasoning.data.data_sampler import BatchSampler
 from trl.trainer import ConstantLengthDataset, DataCollatorForCompletionOnlyLM
 
 
@@ -39,12 +40,28 @@ def formatting_prompts_func_wnc(example):
     text= system_msg + user_msg + assistant_msg
     return text
 
+def formatting_prompts_func_gec(example):
+    with open('./prompts/gec.json') as fp:
+        task_prompt = json.load(fp)
+    system_msg= f'<|start_header_id|>system<|end_header_id|>\n\n{task_prompt['system_msg']}<|eot_id|>'
+    user_msg= f'<|start_header_id|>user<|end_header_id|>\n\n{task_prompt['user_msg'].format(instruction=task_prompt['task_prompt'], question=example['input'])}<|eot_id|>'
+    rationale= example['rationale'] if 'rationale' in example else '' # vanilla sft using off-the-shelf data doesn't have rationale
+    # For GEC multiple editors are allowed, so when we use off-the-shelf data we need to choose one of the output or else train it as n different examples
+    # Using to determine off-the-shelf data or custom data
+    if 'rationale' in example:
+        assistant_msg=f'<|start_header_id|>assistant<|end_header_id|>\n\n{task_prompt['assistant_msg'].format(rationale=rationale, response=example['output'])}<|eot_id|>' 
+    else: # Currently taking first output for off-the-shelf data
+        assistant_msg=f'<|start_header_id|>assistant<|end_header_id|>\n\n{task_prompt['assistant_msg'].format(rationale=rationale, response=example['output'][0])}<|eot_id|>' 
+    text= system_msg + user_msg + assistant_msg
+    return text
+
 formatting_funcs = {
     'gsm8k': formatting_prompts_func_gsm8k,
-    'wnc': formatting_prompts_func_wnc
+    'wnc': formatting_prompts_func_wnc,
+    'gec': formatting_prompts_func_gec
 }
 
-def finetune(model_name, train_data_path, output_dir, formatting_func, add_special_tokens, lora, epochs, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
+def finetune(model_name, train_data_path, output_dir, formatting_func, add_special_tokens, sample, sampling_ratio, threshold_col, threshold_value, lora, epochs, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
     # Loading data
     train_data= load_from_disk(train_data_path)
 
@@ -85,6 +102,17 @@ def finetune(model_name, train_data_path, output_dir, formatting_func, add_speci
 
     training_args.add_special_tokens = add_special_tokens
 
+    # # Helps in deciding which method to use for getting training batch 
+    # batch_sampler=None
+    # if sample:
+    #     batch_sampler= BatchSampler(
+    #         dataset=train_data,
+    #         threshold_column=threshold_col,
+    #         threshold=threshold_value,
+    #         batch_size=training_args.per_device_train_batch_size,
+    #         sampling_ratio=sampling_ratio
+        # )
+
     if lora:
         # PEFT config
         peft_config = LoraConfig(
@@ -105,7 +133,11 @@ def finetune(model_name, train_data_path, output_dir, formatting_func, add_speci
             formatting_func=formatting_prompts_func,
             data_collator=collator,
             tokenizer=tokenizer,
-            peft_config=peft_config
+            peft_config=peft_config,
+            use_sampling=sample,
+            threshold_column=threshold_col,
+            threshold=threshold_value,
+            sampling_ratio=sampling_ratio
         )
     else:
         trainer = CustomizedSFTTrainer(
@@ -114,7 +146,11 @@ def finetune(model_name, train_data_path, output_dir, formatting_func, add_speci
             train_dataset=train_data,
             formatting_func=formatting_prompts_func,
             data_collator=collator,
-            tokenizer=tokenizer
+            tokenizer=tokenizer,
+            use_sampling=sample,
+            threshold_column=threshold_col,
+            threshold=threshold_value,
+            sampling_ratio=sampling_ratio
         )
          
     # Start training
@@ -129,7 +165,11 @@ def main():
     parser.add_argument("--output_dir", type=str, default=None)
     parser.add_argument("--formatting_func", type=str, choices=list(formatting_funcs.keys()), required=True,help='Function to call to format the data during SFT')
     parser.add_argument("--add_special_tokens", action='store_true', help='Set this flag to true', default=True)
-    parser.add_argument("--lora", action="store_true", help="Set this flag to true", default=None)
+    parser.add_argument('--sample', action='store_true', help='Set the flag to true if sampling based data creation is required', default=None)
+    parser.add_argument('--sampling_ratio', type=float, default=0.9, help='Sampling amount for below threshold values')
+    parser.add_argument('--threshold_col', type=str, default=None, help='Column that needs to be used for thresholding')
+    parser.add_argument('--threshold_value', type=float, default=None, help='Threshold value to use for spliting the data based on threshold_col')
+    parser.add_argument("--lora", action="store_true", help="Set this flag to true if you want to use LoRA Finetuning", default=None)
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--lr", type=float, default=2e-5)
     parser.add_argument("--lr_scheduler_type", type=str, default="linear")
@@ -156,6 +196,10 @@ def main():
         output_dir=args.output_dir, 
         formatting_func=args.formatting_func,
         add_special_tokens=args.add_special_tokens,
+        sample=args.sample,
+        sampling_ratio=args.sampling_ratio,
+        threshold_col=args.threshold_col,
+        threshold_value=args.threshold_value,
         lora=args.lora,
         epochs=args.epochs, 
         lr=args.lr, 

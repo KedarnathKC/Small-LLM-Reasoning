@@ -1,6 +1,39 @@
 {
-    "task_prompt":"Given an input, the goal is to detect and correct the grammatical errors of all error types present in the sentence and return the reasoning first and then the corrected sentence.\n\nYour response should end with \"The corrected text is [answer]\" where [answer] is the grammatically correct version of the input sentence.",
-    "system_msg": "You are an expert in removing subjective biases in texts.",
-    "user_msg": "Instruction:\n{instruction}\n\nInput:\n{question}\n\n",
-    "assistant_msg": "{rationale} The corrected text is {response}\n"
+    "task_prompt":"Correct grammatical errors in the text by first providing a response, followed by an explanation. Please use this template for the explanation: \"The word X should be deleted/inserted/replaced by Y because ...\"",
+    "task_prompt1":"Given an input text, the goal is to detect and correct grammatical errors in the text. First explain your reasoning by describing the grammatical errors and how to fix them and then, provide the corrected text.\n\nYour response should end with \"The corrected text is: [answer]\" where [answer] is the grammatically correct version of the input text.",
+    "system_msg": "",
+    "user_msg": "Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\n\n### Instruction:\n{instruction}\n\n### Input:\n{question}\n\n### Response:\n",
+    "assistant_msg": "{rationale} The corrected text is {response}\n",
+    "few_shot":[
+        {
+            "id":"8778",
+            "input":"way to move from place to another .",
+            "reference":"way to move from one place to another .",
+            "rationale":"The word \"one\" should be inserted before \"place\" because the phrase \"from place to another\" is ungrammatical. The correct idiomatic expression in English is \"from one place to another,\" which properly matches the singular \"another\" with the singular \"one place\"."
+        },
+        {
+            "id":"21174",
+            "input":"Hi Alison !",
+            "reference":"Hi Alison !",
+            "rationale":"No grammatical errors are present in the sentence. It is already correct as an informal greeting."
+        },
+        {
+            "id":"17866",
+            "input":"So , could you tell me what is the best way to reach your house ?",
+            "reference":"So , could you tell me which is the best way to reach your house ?",
+            "rationale":"The word \"what\" should be replaced by \"which\" because \"which\" is used when selecting from a known or limited set of options, making it more appropriate in this context where the speaker is likely referring to specific possible ways to reach the house."
+        },
+        {
+            "id":"19539",
+            "input":"What I 'm doing is challenging the way we approach to it .",
+            "reference":"What I 'm doing is challenging the way we approach  it .",
+            "rationale":"The word to should be deleted because the verb approach is a transitive verb and does not require a preposition before its object. Including \"to\" is grammatically incorrect in this context."
+        },
+        {
+            "id":"25488",
+            "input":"The absence of the parents or the fact they usually have no control nor way to drive their choices makes me very worried about the future of our society .",
+            "reference":"The absence of  parents or the fact they usually have no control or way to drive their choices makes me very worried about the future of our society .",
+            "rationale":"The word the should be deleted because in this context, \"parents\" is used in a general, plural sense, and does not require the definite article.The word nor should be replaced by or because \"nor\" is typically used in negative constructions following \"neither,\" but here the sentence uses \"no control\" as a standalone negative, making \"or\" the appropriate coordinating conjunction."
+        }
+    ]
 }

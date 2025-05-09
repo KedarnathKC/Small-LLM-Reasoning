@@ -97,6 +97,7 @@ def main():
         create_sft_data_with_teacher_gen(
             data_path=args.data_path, 
             teacher_data_path=args.teacher_data_path, 
+            student_data_path=args.student_data_path,
             output_path=args.output_path,
             input_col=args.input_col, 
             output_col=args.output_col,

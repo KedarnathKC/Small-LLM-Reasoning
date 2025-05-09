@@ -18,10 +18,31 @@ def get_prob(teacher_log_prob):
     teacher_prob=np.exp(teacher_logprob)
     return teacher_prob
 
-def create_sft_data_with_teacher_gen(data_path, teacher_data_path, output_path, input_col, output_col, remove_incorrects, incorrect_threshold=0):
+def get_log_prob_ratio(teacher_log_prob, student_log_prob):
+    tr_stu_logprob=[]
+    student_logprob=[]
+    teacher_logprob=[]
+    for i in range(len(teacher_log_prob)):
+        student_log_probs=np.array(student_log_prob[i])
+        teacher_log_probs=np.array(teacher_log_prob[i])
+        student_logprob.append(np.mean(student_log_probs))
+        teacher_logprob.append(np.mean(teacher_log_probs))
+        tr_stu_logprob.append(
+            np.subtract(
+                np.mean(teacher_log_probs),
+                np.mean(student_log_probs)
+            )
+        )
+    return tr_stu_logprob
+
+def create_sft_data_with_teacher_gen(data_path, teacher_data_path, student_data_path, output_path, input_col, output_col, remove_incorrects, incorrect_threshold=0):
     data = load_from_disk(data_path)
     teacher_data = load_dataset('json',data_files=teacher_data_path)['train']
+    student_data = load_dataset('json',data_files=student_data_path)['train']
 
+    tr_stu_logprob_ratio=get_log_prob_ratio(student_data['teacher_log_probs'],student_data['student_log_probs'])
+    teacher_prob= get_prob(student_data['teacher_log_probs'])
+   
     teacher_answers=[]
     teacher_rationale=[]
     teacher_scores=[]
@@ -36,17 +57,18 @@ def create_sft_data_with_teacher_gen(data_path, teacher_data_path, output_path, 
         input_col: questions,
         output_col: teacher_answers,
         'rationale': teacher_rationale,
-        'score': teacher_scores
+        'logprob_ratio':tr_stu_logprob_ratio,
+        'tr_prob':teacher_prob,
+        'tr_score': teacher_scores
     }
 
     data= Dataset.from_dict(new_data)
 
     if remove_incorrects:
         # Dont use >=, as in gsm8k where score is 0 or 1, and incorrect_threshold will be 0.
-        data= data.filter(lambda x: x['score']>incorrect_threshold)
+        data= data.filter(lambda x: x['tr_score']>incorrect_threshold)
     
     # Save the data
-    data=data.remove_columns('score')
     data.save_to_disk(output_path)
     print(f'Created the dataset for SFT using teacher outputs as output for the given prompt, using all data with remove_incorrects={remove_incorrects}')
     print(f'Saved at: {output_path}')

@@ -12,5 +12,5 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-bash scripts/exp-5.2.1.1/studentlogprobs.sh | tee ./outputs/exp-5.2.1.1/studentlogprobs.log
-bash scripts/exp-5.2.1.1/teacherlogprobs.sh | tee ./outputs/exp-5.2.1.1/teacherlogprobs.log
+bash scripts/exp-5.2.1.1/studentlogprobs.sh | tee -a ./outputs/exp-5.2.1.1/studentlogprobs.log
+bash scripts/exp-5.2.1.1/teacherlogprobs.sh | tee -a ./outputs/exp-5.2.1.1/teacherlogprobs.log

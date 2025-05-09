@@ -7,6 +7,7 @@ from transformers.feature_extraction_utils import FeatureExtractionMixin
 from trl.trainer.utils import ConstantLengthDataset
 from accelerate import PartialState
 from trl.data_utils import is_conversational, maybe_apply_chat_template, maybe_convert_to_chatml, pack_examples
+from small_llm_reasoning.data.data_sampler import BatchSampler
 from transformers.trainer import *
 
 # from trl.trainer import ConstantLengthDataset, DataCollatorForCompletionOnlyLM
@@ -22,24 +23,44 @@ and call super.__int__() wont that be enough?
 
 class CustomizedSFTTrainer(SFTTrainer):
     # Added _custom_batch_sampler
-    def __init__(self, *args, batch_sampler=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._custom_batch_sampler = batch_sampler  
+    def __init__(
+        self,
+        *args,
+        use_sampling: bool = False,
+        threshold_column: str = None,
+        threshold: float = None,
+        sampling_ratio: float = None,
+        **kwargs
+    ):
+        super().__init__(*args, **kwargs) 
+        self.use_sampling=use_sampling
+        self.threshold_column = threshold_column
+        self.threshold = threshold
+        self.sampling_ratio = sampling_ratio
 
     # Overrides the default trainers get_train_dataloader to help with sampling of data using thresholding
     def get_train_dataloader(self):
-        if self._custom_batch_sampler:
-            # Use custom sampling strategy
-            print('Using Custom Sampling Strategy')
-            return DataLoader(
-                self.train_dataset,
-                batch_sampler=self._custom_batch_sampler,
-                collate_fn=self.data_collator
-            )
-        else:
+        if not self.use_sampling:
             # Fall back to default SFTTrainer behavior
             print('Using default get_train_dataloader() function')
             return super().get_train_dataloader()
+        
+        # 3. instantiate your sampler ONCE per epoch, on the tokenized dataset
+        sampler = BatchSampler(
+            dataset=self.train_dataset,
+            batch_size=self.args.per_device_train_batch_size,
+            threshold_column=self.threshold_column,
+            threshold=self.threshold,
+            sampling_ratio=self.sampling_ratio
+        )
+        train_dataset = self._remove_unused_columns(self.train_dataset, description="training")
+        return DataLoader(
+            train_dataset,
+            batch_sampler=sampler,
+            collate_fn=self.data_collator,
+            num_workers=self.args.dataloader_num_workers,
+        )
+        
     
     # Fixed the max_steps calculation
     def set_initial_training_values(
@@ -60,7 +81,7 @@ class CustomizedSFTTrainer(SFTTrainer):
         # If max_steps is negative, we use the number of epochs to determine the number of total steps later
         epoch_based = max_steps < 0
         len_dataloader = len(dataloader) if has_length(dataloader) else None
-
+        print(f'len of dataloader: {len_dataloader}')
         # Case 2: We have a dataloader length and can extrapolate
         if len_dataloader is not None:
             num_update_steps_per_epoch = max(math.ceil(len_dataloader / args.gradient_accumulation_steps), 1)
@@ -605,6 +626,7 @@ class CustomizedSFTTrainer(SFTTrainer):
         formatting_func: Optional[Callable[[dict], str]],
         dataset_name: str
     ) -> Union[Dataset, IterableDataset]:
+        print('Inside Prepare dataset')
         # Convert the dataset to an IterableDataset if it is a ConstantLengthDataset
         if isinstance(dataset, ConstantLengthDataset):
             return dataset
@@ -636,7 +658,7 @@ class CustomizedSFTTrainer(SFTTrainer):
                 # print(f'Batched: {batched}')
                 def _func(example):
                     return {"text": formatting_func(example)}
-
+                print('Calling formatting_func')
                 dataset = dataset.map(_func, batched=batched, **map_kwargs)
 
             # If the dataset is prompt-completion, convert it to language modeling type
@@ -678,8 +700,9 @@ class CustomizedSFTTrainer(SFTTrainer):
                     else:
                         tokenized = processing_class(ex[args.dataset_text_field])
                     return {"input_ids": tokenized["input_ids"], "attention_mask": tokenized["attention_mask"]}
-
+                print('Tokenizing the data')
                 dataset = dataset.map(tokenize, **map_kwargs)
+                print(dataset)
 
             # Pack or truncate
             if packing:

@@ -3,10 +3,11 @@ cache_dir = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transfor
 os.environ['HF_HOME']=cache_dir
 os.environ['HF_HUB_CACHE']=cache_dir+'/hub'
 
-import json
-import argparse
 import gc
+import time
+import json
 import torch
+import argparse
 from tqdm import tqdm
 from datasets import load_from_disk, load_dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -48,7 +49,7 @@ def get_logprobs(model_path, gt_data_path, tokenized_data_path, student_data_pat
         examples=[]
         questions=[]
         answers=[]
-        # make sure we don’t go past the end:
+        # make sure we don't go past the end:
         end = min(i + batch_size, data_student.num_rows)
         for j in range(i, end):
             question = torch.tensor(data_tokenized['input_ids'][j]['prompt_token_ids'], dtype=torch.long).unsqueeze(0)
@@ -65,7 +66,8 @@ def get_logprobs(model_path, gt_data_path, tokenized_data_path, student_data_pat
         )['input_ids'].to(model.device)
 
         # Forward Pass
-        outputs = model(examples)
+        with torch.no_grad():  # Ensure no gradients are computed
+            outputs = model(examples)
 
         probs = torch.log_softmax(outputs.logits, dim=-1).detach()
         probs = probs[:, :-1, :]
@@ -91,7 +93,13 @@ def get_logprobs(model_path, gt_data_path, tokenized_data_path, student_data_pat
                 }
             )
 
-        # Clearing memory to avoid OOM issues
+        # Move tensors to CPU and delete them
+        examples = examples.cpu()
+        outputs.logits = outputs.logits.cpu()
+        probs = probs.cpu()
+        gen_probs = gen_probs.cpu()
+        
+        # Clear memory
         del examples, outputs, probs, gen_probs, logprobs, questions, answers
         gc.collect()  # Trigger Python's garbage collector
         torch.cuda.empty_cache()  # Free unused GPU memory
@@ -103,11 +111,16 @@ def get_logprobs(model_path, gt_data_path, tokenized_data_path, student_data_pat
     with open(output_path, "w") as f:
         json.dump(all_outputs, f, indent=4)
     
-    # To avoid running into OOM
+    # Clear all remaining memory
     del data_student, data_tokenized, data_gt, tokenizer, model
     del all_outputs
     gc.collect()  # Trigger Python's garbage collector
     torch.cuda.empty_cache()  # Free unused GPU memory
+    
+    # Force garbage collection again after a short delay
+    time.sleep(1)  # Give some time for memory to be freed
+    gc.collect()
+    torch.cuda.empty_cache()
 
 def main():
     parser = argparse.ArgumentParser()

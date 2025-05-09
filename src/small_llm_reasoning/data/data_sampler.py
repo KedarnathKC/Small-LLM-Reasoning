@@ -1,23 +1,38 @@
-from torch.utils.data import Sampler
-import random
 import math
+import random
+import numpy as np
+from torch.utils.data import Sampler
 
-class StratifiedBatchSampler(Sampler):
-    def __init__(self, dataset, threshold_column, threshold, batch_size):
+class BatchSampler(Sampler):
+    def __init__(self, dataset, threshold_column, threshold, sampling_ratio, batch_size):
         self.dataset = dataset
         self.batch_size = batch_size
         self.threshold_column = threshold_column
         self.threshold = threshold
+        self.sampling_ratio= sampling_ratio
 
         # Convert column to list for easier indexing
         column_values = dataset[self.threshold_column]
 
-        self.above_indices = [i for i, v in enumerate(column_values) if v >= threshold]
-        self.below_indices = [i for i, v in enumerate(column_values) if v < threshold]
+        # If threshold=None, then we take the median of the threshold_column as the threshold.
+        if self.threshold is None:
+            self.threshold= np.median(column_values)
+        
+        print(f'Threshold value: {self.threshold}')
 
+        print(f'Threshold value type: {type(self.threshold)}')
+
+        self.above_indices = [i for i, v in enumerate(column_values) if v >= self.threshold]
+        self.below_indices = [i for i, v in enumerate(column_values) if v < self.threshold]
+        
+        print(f'# of data points: {self.dataset.num_rows}')
+        print(f'# of data points Above Threshold: {len(self.above_indices)}')
+        print(f'# of data points Below Threshold: {len(self.below_indices)}')
+        
         assert len(self.above_indices) > 0 and len(self.below_indices) > 0, "Both sides of the threshold must be represented."
 
     def __iter__(self):
+        print('iter is called')
         # Shuffle at the start of each epoch
         random.shuffle(self.above_indices)
         random.shuffle(self.below_indices)
@@ -29,7 +44,7 @@ class StratifiedBatchSampler(Sampler):
         below_pool = self.below_indices.copy()
 
         while above_pool:
-            num_above = max(1, self.batch_size // 10)
+            num_above = max(1, self.batch_size // ((1-self.sampling_ratio)*100))
             num_below = self.batch_size - num_above
 
             if len(above_pool) < num_above:
