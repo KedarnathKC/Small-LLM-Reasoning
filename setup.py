@@ -10,6 +10,10 @@ setup(
     install_requires=[
         "pandas",
         "numpy",
+        "matplotlib",
+        "together",
+        "openai",
+        "ollama",
         "torch==2.4.0",
         "transformers",
         "vllm==0.6.0",
