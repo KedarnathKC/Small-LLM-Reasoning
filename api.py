@@ -3,7 +3,6 @@ import os
 from typing import Dict, List, Optional, Union
 import logging
 import requests
-from together import Together
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
