@@ -11,3 +11,6 @@
 \scratch
 \outputs
 \notebooks\graphs
+sync.sh
+.DS_Store
+.vscode/
