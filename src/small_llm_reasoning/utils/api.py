@@ -17,7 +17,7 @@ class API:
             api_key (str, optional): API key for the provider. If not provided, will look for environment variable.
         """
         self.provider = provider.lower()
-        assert self.provider in ["openai", "llama", "ollama", "together"]
+        assert self.provider in ["openai", "llama", "ollama", "together", "vllm", "openrouter", "nvidia"]
         
         # Set up provider-specific API keys
         if self.provider == "openai":
@@ -41,6 +41,22 @@ class API:
             # Ollama doesn't require an API key as it runs locally
             self.base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
             self.api_key = "ollama"
+
+        elif self.provider == "vllm":
+            self.base_url = "http://localhost:8000"
+            self.api_key = None
+
+        elif self.provider == "openrouter":
+            self.base_url = "https://openrouter.ai/api"
+            self.api_key = api_key or os.getenv("OPENROUTER_API_KEY")
+            if not self.api_key:
+                raise ValueError("No OpenRouter API key provided. Set OPENROUTER_API_KEY environment variable or pass api_key parameter.")
+            
+        elif self.provider == "nvidia":
+            self.base_url = "https://integrate.api.nvidia.com"
+            self.api_key = api_key or os.getenv("NVIDIA_API_KEY")
+            if not self.api_key:
+                raise ValueError("No NVIDIA API key provided. Set NVIDIA_API_KEY environment variable or pass api_key parameter.")
 
         self.client = openai.OpenAI(base_url=self.base_url + "/v1" if self.base_url else None , api_key=self.api_key)
             
@@ -112,6 +128,7 @@ class API:
                 response = requests.get(self.base_url + "/models", headers=headers)
                 response.raise_for_status()
                 response = response.json()
+                print(response)
                 return [model["id"] for model in response]
                 
             elif self.provider == "ollama":
@@ -126,21 +143,3 @@ class API:
         except Exception as e:
             logger.error(f"Error listing models for {self.provider}: {str(e)}")
             raise
-
-# Example usage
-if __name__ == "__main__":
-    api = API(provider="ollama")
-    
-    # List available models
-    print("Available models:")
-    print(api.list_models())
-    
-    # Get completion
-    response = api.get_completion(
-        prompt="Hello, world!",
-        model="llama3.2:3b",  # Use one of the models from the list
-        max_tokens=100,
-        temperature=0.7
-    )
-    print("\nCompletion response:")
-    print(response)

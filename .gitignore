@@ -8,9 +8,41 @@
 # \kchimmad\output
 
 \datasets
+__pycache__
 \scratch
 \outputs
 \notebooks\graphs
 sync.sh
 .DS_Store
 .vscode/
+data/*/raw_data/*
+lm-evaluation-harness/*
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+.env/
+.venv/
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db
