@@ -25,8 +25,9 @@ def main():
     parser.add_argument('--teacher_data_path', type=str, help='Path to the teacher data JSON file')
     parser.add_argument('--student_data_path', type=str, help='Path to the student data JSON file')
     parser.add_argument('--output_path', type=str, help='Path where the output dataset will be saved')
-    parser.add_argument('--input_col', type=str, required=True, help='Input column name that contains the question/input')
-    parser.add_argument('--output_col', type=str, required=True, help='Input column name that contains the answer/output')
+    parser.add_argument("--formatting_func", type=str, default='')
+    parser.add_argument('--input_col', type=str,  help='Input column name that contains the question/input')
+    parser.add_argument('--output_col', type=str, help='Input column name that contains the answer/output')
     parser.add_argument('--incorrect_threshold', type=float, default=0, help='Threshold to mark output as incorrect')
     parser.add_argument('--threshold_col', type=str, help='Column to threshold on')
     parser.add_argument('--sampling_threshold', type=float, default=0.6, help='Threshold to use one the smapling column')
@@ -45,6 +46,8 @@ def main():
             teacher_data_path=args.teacher_data_path, 
             student_data_path=args.student_data_path, 
             output_path=args.output_path, 
+            formatting_func=args.formatting_func,
+            input_col=args.input_col,
             remove_incorrects=args.remove_incorrects
         )
         return

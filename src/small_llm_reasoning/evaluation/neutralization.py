@@ -1,3 +1,9 @@
+import os
+cache_dir = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache'
+os.environ['TRANSFORMERS_CACHE'] = cache_dir
+os.environ['HF_HOME']=cache_dir
+os.environ['HF_HUB_CACHE']=cache_dir+'/hub'
+
 import re
 import json
 import pandas as pd
@@ -84,8 +90,8 @@ def get_score(data_path, model_output_path, input_col, reference_col):
 
 def main():
     # data_test = load_from_disk("../datasets/gsm8k/test")
-    data_path ="./datasets/neutralization/feedback/"
-    model_output_path = f"./outputs/exp-5.0.3.1/feedback/0-shot/eval_1/generated_outputs.json" 
+    data_path ="./datasets/neutralization/tokenized/LLaMA3B-Instruct/val/0-shot/"
+    model_output_path = f"./outputs/exp-6.2.2.2.1.2/val/0-shot/eval_1/generated_outputs.json" 
     input_col='input'
     output_col='edits'
     score = get_score(data_path, model_output_path, input_col, output_col)

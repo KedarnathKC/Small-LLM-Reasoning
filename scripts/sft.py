@@ -1,4 +1,8 @@
 import os
+cache_dir = "/datasets/ai/llama3/hub"
+os.environ['HF_HOME']=cache_dir
+os.environ['HF_HUB_CACHE']=cache_dir+'/hub'
+
 import re
 import json
 import torch
@@ -10,10 +14,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 from small_llm_reasoning.trainer.sft_trainer import CustomizedSFTTrainer
 from small_llm_reasoning.data.data_sampler import BatchSampler
 from trl.trainer import ConstantLengthDataset, DataCollatorForCompletionOnlyLM
-
-
-cache_dir = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache'
-os.environ['TRANSFORMERS_CACHE'] = cache_dir
 
 # Reading HF Token
 hf_token = os.getenv("hf_token")
@@ -61,9 +61,13 @@ formatting_funcs = {
     'gec': formatting_prompts_func_gec
 }
 
-def finetune(model_name, train_data_path, output_dir, formatting_func, add_special_tokens, sample, sampling_ratio, threshold_col, threshold_value, lora, epochs, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
+def finetune(model_name, train_data_path, output_dir, formatting_func, add_special_tokens, sample, sampling_ratio, threshold_col, threshold_value, lora, epochs, max_steps, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
     # Loading data
     train_data= load_from_disk(train_data_path)
+
+    # Giving the entire path to local folder
+    # model_name = cache_dir + '/' + model_name
+    print(f'Training model: {model_name}')
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, token=hf_token, cache_dir=cache_dir)
     tokenizer.pad_token_id = tokenizer.eos_token_id
@@ -84,34 +88,27 @@ def finetune(model_name, train_data_path, output_dir, formatting_func, add_speci
     training_args = SFTConfig(
         model_init_kwargs={
             "torch_dtype": "bfloat16",
+            # "local_files_only": True,
             "cache_dir":cache_dir
         },
         output_dir=output_dir,
-        num_train_epochs=epochs,
+        # using max-steps
+        # num_train_epochs=epochs,
+        max_steps=max_steps,
         learning_rate=lr,
         lr_scheduler_type=lr_scheduler_type,
         weight_decay=weight_decay,
         warmup_ratio=warmup,
         per_device_train_batch_size=per_device_train_batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
-        save_strategy="epoch",
+        save_strategy="steps",
+        save_steps=100,
         logging_steps=100,
         # Using this 3072(prompt) + 512(output). The 3072(prompt) is taken from LLaMA : https://huggingface.co/datasets/meta-llama/Llama-3.2-1B-Instruct-evals?row=0
         max_seq_length  = max_seq_length
     )
 
     training_args.add_special_tokens = add_special_tokens
-
-    # # Helps in deciding which method to use for getting training batch 
-    # batch_sampler=None
-    # if sample:
-    #     batch_sampler= BatchSampler(
-    #         dataset=train_data,
-    #         threshold_column=threshold_col,
-    #         threshold=threshold_value,
-    #         batch_size=training_args.per_device_train_batch_size,
-    #         sampling_ratio=sampling_ratio
-        # )
 
     if lora:
         # PEFT config
@@ -170,7 +167,8 @@ def main():
     parser.add_argument('--threshold_col', type=str, default=None, help='Column that needs to be used for thresholding')
     parser.add_argument('--threshold_value', type=float, default=None, help='Threshold value to use for spliting the data based on threshold_col')
     parser.add_argument("--lora", action="store_true", help="Set this flag to true if you want to use LoRA Finetuning", default=None)
-    parser.add_argument("--epochs", type=int, default=1)
+    parser.add_argument("--epochs", type=int, default=3)
+    parser.add_argument("--max_steps", type=int, default=-1)
     parser.add_argument("--lr", type=float, default=2e-5)
     parser.add_argument("--lr_scheduler_type", type=str, default="linear")
     parser.add_argument("--warmup", type=float, default=0.1)
@@ -202,6 +200,7 @@ def main():
         threshold_value=args.threshold_value,
         lora=args.lora,
         epochs=args.epochs, 
+        max_steps=args.max_steps,
         lr=args.lr, 
         lr_scheduler_type=args.lr_scheduler_type,
         weight_decay=args.weight_decay,

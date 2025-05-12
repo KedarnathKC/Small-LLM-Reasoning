@@ -32,7 +32,6 @@ class BatchSampler(Sampler):
         assert len(self.above_indices) > 0 and len(self.below_indices) > 0, "Both sides of the threshold must be represented."
 
     def __iter__(self):
-        print('iter is called')
         # Shuffle at the start of each epoch
         random.shuffle(self.above_indices)
         random.shuffle(self.below_indices)

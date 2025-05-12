@@ -113,6 +113,13 @@ class CustomizedSFTTrainer(SFTTrainer):
                 "args.max_steps must be set to a positive value if dataloader does not have a length, was"
                 f" {args.max_steps}"
             )
+        print(f'num_train_epochs: {num_train_epochs}')
+        print(f'num_update_steps_per_epoch: {num_update_steps_per_epoch}')
+        print(f'num_examples: {num_examples}')
+        print(f'num_train_samples: {num_train_samples}')
+        print(f'epoch_based: {epoch_based}')
+        print(f'len_dataloader: {len_dataloader}')
+        print(f'max_steps: {max_steps}')
         return (
             num_train_epochs,
             num_update_steps_per_epoch,

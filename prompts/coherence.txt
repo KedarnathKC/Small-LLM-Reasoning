@@ -1,1 +1,0 @@
-Enhance the cohesion of the text by initially providing a response, followed by an explanation. Your response should start with "### Revised Text: [answer]", where answer is the revisied text to the input. Please use this template for the explanation: "The word X should be deleted/inserted/replaced by Y because ..."

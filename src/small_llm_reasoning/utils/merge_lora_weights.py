@@ -6,7 +6,7 @@ from peft import PeftModel
 
 
 
-cache_dir = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache/'
+cache_dir = "/datasets/ai/llama3/hub"
 os.environ['HF_HOME'] = cache_dir
 
 
