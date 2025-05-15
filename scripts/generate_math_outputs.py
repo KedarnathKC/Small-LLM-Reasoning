@@ -175,8 +175,10 @@ if test:
     for key in final_data.keys():
         final_data[key] = final_data[key][:2]
         
-rerun_dirs = ['llama-Llama-3.3-70B-Instruct-20250511-0443', 'llama-Llama-3.3-70B-Instruct-20250511-0826', 
-              'llama-Llama-3.3-70B-Instruct-20250511-2356', 'llama-Llama-3.3-70B-Instruct-20250511-2358']
+rerun_dirs = ['llama-Llama-3.3-70B-Instruct-20250511-0443',
+                'llama-Llama-3.3-70B-Instruct-20250512-0000',
+                'llama-Llama-3.3-70B-Instruct-20250511-0826',
+                'llama-Llama-3.3-70B-Instruct-20250512-0711']
 final_rerun_dirs = []
 for x in rerun_dirs:
     final_rerun_dirs.append(f'data/math/outputs/{x}')
@@ -196,6 +198,8 @@ for rerun_dir in final_rerun_dirs:
         old_results = json.load(open(old_results_file))
         for key in old_results.keys():
             for result in old_results[key]:
+                if result["response"] is None or len(result["response"]) == 0:
+                    continue
                 visited_problems.add(get_problem_hash(result["problem"]))
 
 print(f"Found {len(visited_problems)} problems in {len(final_rerun_dirs)} rerun directories")
@@ -219,6 +223,7 @@ failed_examples = {}
 step = 0
 
 os.makedirs(final_output_path, exist_ok=True)
+
 for key in tqdm(final_data.keys(), desc="Processing data", total=len(final_data.keys())):
     results[key] = []
     failed_examples[key] = []
@@ -243,12 +248,14 @@ for key in tqdm(final_data.keys(), desc="Processing data", total=len(final_data.
         finally:
             step += 1
 
-            if step % 1 == 0:
+            if step % 5 == 0:
                 with open(os.path.join(final_output_path, f"results_partial.json"), "w") as f:
                     json.dump(results, f, indent=4)
 
                 with open(os.path.join(final_output_path, f"failed_examples_partial.json"), "w") as f:
                     json.dump(failed_examples, f, indent=4)
+
+                print(f"Saved results and failed examples for {step} examples at {final_output_path}")
 
     with open(os.path.join(final_output_path, f"results.json"), "w") as f:
         json.dump(results, f, indent=4)
