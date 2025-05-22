@@ -208,6 +208,15 @@ def generate(model_path, eval_data_path, split, prompting_strategy, max_tokens, 
         json.dump(generated_outputs, f, indent=4)
 
     evaluation_results = evaluate_problems(output_dir, eval_data_path, split)
+
+    # Print results
+    print("\nEvaluation Results:")
+    print("-" * 50)
+    print("Overall Performance:")
+    print(f"Exact match rate: {evaluation_results['overall']['exact_match']:.2%}")
+    print(f"Total problems: {evaluation_results['overall']['total_problems']}")
+    print(f"Correct answers: {evaluation_results['overall']['correct_count']}")
+    
     os.makedirs(output_dir, exist_ok=True)
     # Save results to evals.json in the same directory
     evals_file = os.path.join(output_dir, "evals.json")
