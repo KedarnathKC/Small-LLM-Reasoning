@@ -117,7 +117,7 @@ def generate(model_path, eval_data_path, prompting_strategy, max_tokens, log_pro
         generated_outputs.append(entry)
 
 
-    generated_outputs_path = os.path.join(output_dir, output_path)
+    generated_outputs_path = os.path.join(output_dir, 'generated_outputs.json')
     with open(generated_outputs_path, "w") as f:
         json.dump(generated_outputs, f, indent=4)
 

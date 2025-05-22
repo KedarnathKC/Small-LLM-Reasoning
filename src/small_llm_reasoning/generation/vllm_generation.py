@@ -9,7 +9,7 @@ from small_llm_reasoning.utils import python_utils
 # from utils.prompt_utils import generate_all_answer_strings
 
 
-cache_directory = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache/'
+cache_directory = os.getenv("HF_HOME")
 os.environ['HF_HOME'] = cache_directory
 
 def llama_forward(
@@ -47,6 +47,7 @@ def llama_forward(
             model=model_path, 
             tokenizer=model_path, 
             tensor_parallel_size=n_gpus, 
+            download_dir=cache_directory,
             # enable_lora=enable_lora  
         )
 

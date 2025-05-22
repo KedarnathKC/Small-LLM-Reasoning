@@ -6,13 +6,6 @@ from typing import Dict, List, Optional, Any
 import warnings
 
 from datasets import load_from_disk
-import hashlib
-
-def get_problem_from_prompt(prompt: str) -> str:
-    return prompt.split("Problem: ")[-1].split("<|eot_id|>")[0].strip()
-
-def get_query_hash(problem: str) -> str:
-    return hashlib.sha256(problem.encode()).hexdigest()
 
 # Suppress ANTLR version mismatch warnings
 warnings.filterwarnings("ignore", message="ANTLR runtime and generated code versions disagree")
@@ -273,17 +266,15 @@ def evaluate_response(ground_truth: str, model_response: str) -> Dict[str, int]:
         print(f"Error: {e}")
         return {"exact_match": 0}
 
-def process_vllm_outputs(output_path, hf_dataset_path):
+def process_vllm_outputs(output_path, hf_dataset_path, split=None):
     hf_dataset = load_from_disk(hf_dataset_path)
+    
+    if split is not None:
+        hf_dataset = hf_dataset[split]
 
     assert os.path.exists(os.path.join(output_path, "all_outputs_processed.json"))
 
     all_outputs_processed = json.load(open(os.path.join(output_path, "all_outputs_processed.json")))
-
-    outputs_lookup = {}
-    for x in all_outputs_processed:
-        problem_hash = get_query_hash(get_problem_from_prompt(x['prompt']))
-        outputs_lookup[problem_hash] = x
 
     results = {}
     for data in hf_dataset:
@@ -293,10 +284,13 @@ def process_vllm_outputs(output_path, hf_dataset_path):
         if t['type'] not in results:
             results[t['type']] = []
 
-        problem_hash = get_query_hash(data['problem'])
+        problem = data['problem'] if 'problem' in data else data['question']
 
-        t["response"] = outputs_lookup[problem_hash]['outputs'][0]
-        t["input_prompt"] = outputs_lookup[problem_hash]['prompt']
+        for response in all_outputs_processed:
+            if problem in response['prompt']:
+                t["response"] = response['outputs'][0]
+                t["input_prompt"] = response['prompt']
+                break
 
         results[t['type']].append(t)
 
@@ -305,7 +299,7 @@ def process_vllm_outputs(output_path, hf_dataset_path):
     with open(results_path, "w") as f:
         json.dump(results, f, indent=4)
 
-def evaluate_problems(results_dir: str, hf_dataset_path: str) -> Dict[str, Any]:
+def evaluate_problems(results_dir: str, hf_dataset_path: str, split=None) -> Dict[str, Any]:
     """
     Evaluate all problems from a results JSON file in the given directory.
     
@@ -318,7 +312,7 @@ def evaluate_problems(results_dir: str, hf_dataset_path: str) -> Dict[str, Any]:
     results_file = os.path.join(results_dir, "results.json")
     if not os.path.exists(results_file):
         print(f"results.json not found in directory {results_dir}, processing vllm outputs")
-        process_vllm_outputs(results_dir, hf_dataset_path)
+        process_vllm_outputs(results_dir, hf_dataset_path, split)
         
     try:
         with open(results_file, 'r') as f:
@@ -351,7 +345,7 @@ def evaluate_problems(results_dir: str, hf_dataset_path: str) -> Dict[str, Any]:
             category_correct += result['exact_match']
             
             category_detailed.append({
-                'problem': problem.get('problem', ''),
+                'problem': problem.get('problem', '') if 'problem' in problem else problem.get('question', ''),
                 'prediction': model_response,
                 'correct_answer': ground_truth,
                 'is_correct': bool(result['exact_match']),
@@ -393,11 +387,12 @@ def main():
     parser.add_argument("--verbose", action="store_true", help="Print detailed information")
     parser.add_argument("--hf_dataset_path", type=str, required=False, default='/scratch3/workspace/wenlongzhao_umass_edu-metakd/dev_jay/small-reasoning-lm/data/math/raw_data/4_shot_math_test_data',
                       help="Path to the Hugging Face dataset")
-    
+    parser.add_argument("--split", type=str, required=False, default=None,
+                        help="Split to evaluate on (e.g., test, train)")
     args = parser.parse_args()
     
     # Evaluate all problems
-    evaluation_results = evaluate_problems(args.results_dir, args.hf_dataset_path)
+    evaluation_results = evaluate_problems(args.results_dir, args.hf_dataset_path, args.split)
     
     # Save results to evals.json in the same directory
     evals_file = os.path.join(args.results_dir, "evals.json")
