@@ -264,8 +264,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.custom_task_prompt:
-        assert args.custom_task_prompt_suffix is not None, "custom_task_prompt_suffix must be provided if custom_task_prompt is provided"
+    if args.custom_task_prompt and not args.use_chat_template:
+        assert args.custom_task_prompt_suffix is not None, "custom_task_prompt_suffix must be provided if custom_task_prompt is provided and use_chat_template is False"
 
     if os.path.isdir(args.model_path):
         # Iterate over all checkpoints inside model_path (if local model path)
