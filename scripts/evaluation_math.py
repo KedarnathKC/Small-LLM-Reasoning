@@ -60,6 +60,8 @@ def make_prompt(data, tokenizer, few_shot_examples=False, use_chat_template=Fals
         few_shot_examples: Examples to include as few-shot demonstrations
         use_chat_template: Whether to use the chat template formatting
         custom_task_prompt: Custom task prompt to override the default
+        custom_task_prompt_suffix: Custom task prompt suffix that will say something like: 'Answer: '
+        remove_system_prompt: Whether to remove the system prompt from the prompt
     
     Returns:
         The formatted prompt
@@ -216,7 +218,7 @@ def generate(model_path, eval_data_path, split, prompting_strategy, max_tokens, 
     print(f"Exact match rate: {evaluation_results['overall']['exact_match']:.2%}")
     print(f"Total problems: {evaluation_results['overall']['total_problems']}")
     print(f"Correct answers: {evaluation_results['overall']['correct_count']}")
-    
+
     os.makedirs(output_dir, exist_ok=True)
     # Save results to evals.json in the same directory
     evals_file = os.path.join(output_dir, "evals.json")
