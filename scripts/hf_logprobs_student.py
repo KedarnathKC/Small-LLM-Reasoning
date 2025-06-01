@@ -14,18 +14,18 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 
 hf_token=os.getenv('hf_token')
 
-def get_logprobs(model_path, gt_data_path, tokenized_data_path, student_data_path, batch_size, output_path, answer_col, torch_dtype='bfloat16'):
+def get_logprobs(model_path, gt_data_path, tokenized_prompt_path, student_generation_path, batch_size, output_path, answer_col, torch_dtype='bfloat16'):
     '''
     model_path:
     gt_data_path:
-    tokenized_data_path:
-    student_data_path:
+    tokenized_prompt_path:
+    student_generation_path:
     batch_size:
     output_path:
     '''
     # Loading Data
-    data_student = load_dataset('json', data_files=student_data_path)['train']
-    data_tokenized = load_from_disk(tokenized_data_path)
+    data_student = load_dataset('json', data_files=student_generation_path)['train']
+    data_tokenized = load_from_disk(tokenized_prompt_path)
     data_gt=load_from_disk(gt_data_path)
 
     tokenizer = AutoTokenizer.from_pretrained(
@@ -82,14 +82,15 @@ def get_logprobs(model_path, gt_data_path, tokenized_data_path, student_data_pat
                 logprobs.append(prob.item())
             all_outputs.append(
                 {
-                    'prompt':data_student['input'][i+j],
-                    'gt_reasoning':data_gt[answer_col][i+j],
-                    'gt_answer':data_student['GT_Answer'][i+j],
-                    'student_token_ids':data_student['token_ids'][i+j][0],
-                    'student_reasoning':data_student['output'][i+j][0], # student_reasoning contains rationale(or reasoning)+answer 
+                    'prompt':data_student['prompt'][i+j],
+                    'prompt_input_ids':data_student['prompt_input_ids'][i+j],
+                    'gt_reference':data_gt[answer_col][i+j],
+                    'gt_answer':data_student['gt_answer'][i+j],
                     'student_answer':data_student['model_answer'][i+j],
-                    'student_correctness':data_student['score'][i+j],
-                    'student_log_probs':logprobs
+                    'student_score':data_student['score'][i+j]
+                    'student_output':data_student['model_output'][i+j][0], 
+                    'rejected_input_ids':data_student['model_token_ids'][i+j][0],
+                    'student_log_probs_of_student':logprobs
                 }
             )
 
@@ -126,24 +127,19 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_path", type=str, default=None)
     parser.add_argument("--gt_data_path", type=str, default=None)
-    parser.add_argument("--tokenized_data_path", type=str, default=None)
-    parser.add_argument("--student_data_path", type=str, default=None) 
+    parser.add_argument("--tokenized_prompt_path", type=str, default=None)
+    parser.add_argument("--student_generation_path", type=str, default=None) 
     parser.add_argument('--output_path', type=str, required=True)
     parser.add_argument('--answer_col', type=str, required=True)
     parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument('--torch_dtype', type=str, default='bfloat16')
-    # We no longer require exp-id as we now give the explicit path till the exp directory.
-    # parser.add_argument("--exp_id", type=str, help="Used in the output path, e.g., exp-1.1")
-    # parser.add_argument("--eval_id", type=str, help="Used in the output path, e.g., eval-1")
     args = parser.parse_args() 
-
-    # output_path = f'./outputs/{args.exp_id}/eval_{args.eval_id}/logprobs.json'
 
     get_logprobs(
         model_path=args.model_path,
         gt_data_path=args.gt_data_path,
-        tokenized_data_path=args.tokenized_data_path,
-        student_data_path=args.student_data_path,
+        tokenized_prompt_path=args.tokenized_prompt_path,
+        student_generation_path=args.student_generation_path,
         answer_col=args.answer_col,
         batch_size=args.batch_size,
         output_path=args.output_path

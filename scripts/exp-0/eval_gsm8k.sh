@@ -3,7 +3,8 @@ export NO_PROGRESS_BAR=true
 hostname
 
 python scripts/evaluation_gsm8k.py \
-    --model_path meta-llama/Llama-3.2-3B-Instruct  \
-    --eval_data_path ./datasets/gsm8k/tokenized/LLaMA3B/test/eight-shot/ \
-    --exp_id exp-0 \
-    --eval_id eval_4
+    --model_path /datasets/ai/llama3/hub/models--meta-llama--Meta-Llama-3-70B-Instruct/snapshots/  \
+    --eval_data_path ./datasets/gsm8k/tokenized/Llama-3.3-70B-Instruct/test/8-shot/ \
+    --output_path ./outputs/exp-0/test/8-shot/ \
+    --n_gpus 4 \
+    --eval_id 1

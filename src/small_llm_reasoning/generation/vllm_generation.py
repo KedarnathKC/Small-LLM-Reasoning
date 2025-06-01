@@ -1,4 +1,8 @@
 import os
+cache_dir = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache'
+os.environ['HF_HOME']=cache_dir
+os.environ['HF_HUB_CACHE']=cache_dir+'/hub'
+
 import gc
 import torch
 from typing import Sequence, Optional, Union, Iterable, List, Dict
@@ -7,10 +11,6 @@ from vllm.lora.request import LoRARequest
 
 from small_llm_reasoning.utils import python_utils
 # from utils.prompt_utils import generate_all_answer_strings
-
-
-cache_directory = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache/'
-os.environ['HF_HOME'] = cache_directory
 
 def llama_forward(
     prompts: List[List[Dict]]= None,

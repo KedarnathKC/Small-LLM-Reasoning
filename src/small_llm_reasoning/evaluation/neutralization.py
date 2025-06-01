@@ -68,9 +68,10 @@ def get_score(data_path, model_output_path, input_col, reference_col):
     df = pd.read_json(model_output_path)
 
     # print(df['model_answer'][0])
-    df['model_answer']= df.apply(get_model_answer,axis=1)
+    df['gt_answer']= test.apply(lambda row: get_references(row, reference_col),axis=1)
     df['model_rationale']= df.apply(get_model_rationale,axis=1)
-    df['GT_Answer']= test.apply(lambda row: get_references(row, reference_col),axis=1)
+    df['model_answer']= df.apply(get_model_answer,axis=1)
+    
     test[input_col]=test.apply(lambda row: normalize_text(row[input_col]), axis=1)
 
     sari = load("sari")
@@ -91,7 +92,7 @@ def get_score(data_path, model_output_path, input_col, reference_col):
 def main():
     # data_test = load_from_disk("../datasets/gsm8k/test")
     data_path ="./datasets/neutralization/tokenized/LLaMA3B-Instruct/val/0-shot/"
-    model_output_path = f"./outputs/exp-6.2.2.2.1.2/val/0-shot/eval_1/generated_outputs.json" 
+    model_output_path = f"./outputs/exp-6.2.1.1/val/0-shot/eval_1/generated_outputs.json" 
     input_col='input'
     output_col='edits'
     score = get_score(data_path, model_output_path, input_col, output_col)

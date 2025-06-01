@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=M1_3B_GEC_F1600
-#SBATCH --partition=gpu,gpu-preempt
+#SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --constraint=l40s
 #SBATCH --cpus-per-task=2
@@ -12,6 +12,6 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-bash scripts/exp-6.1.2.3/create_data.sh | tee -a ./outputs/exp-6.1.2.3/data.log
-bash scripts/exp-6.1.2.3/dpo.sh | tee -a ./outputs/exp-6.1.2.3/dpo.log
+# bash scripts/exp-6.1.2.3/create_data.sh | tee -a ./outputs/exp-6.1.2.3/data.log
+# bash scripts/exp-6.1.2.3/dpo.sh | tee -a ./outputs/exp-6.1.2.3/dpo.log
 bash scripts/exp-6.1.2.3/eval_gec.sh | tee -a ./outputs/exp-6.1.2.3/eval.log

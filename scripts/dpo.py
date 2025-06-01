@@ -1,5 +1,5 @@
 import os
-cache_dir = "/datasets/ai/llama3/hub"
+cache_dir = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache'
 os.environ['HF_HOME']=cache_dir
 os.environ['HF_HUB_CACHE']=cache_dir+'/hub'
 hf_token=os.getenv('hf_token')
@@ -11,13 +11,12 @@ from trl import DPOConfig, DPOTrainer
 from small_llm_reasoning.trainer.dpo_trainer import CustomDPOTrainer
 
 
-def train( model_name, train_data_path, output_dir, torch_dtype, add_special_tokens, epochs, max_steps, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_length):
+def train( model_name, train_data_path, output_dir, torch_dtype, add_special_tokens, sample, sampling_ratio, threshold_col, threshold_value, epochs, max_steps, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_length):
     '''
     '''
 
     # Load data
     train_data = load_from_disk(train_data_path)
-    print(f'Train data size: {train_data.num_rows}')
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(
@@ -58,12 +57,12 @@ def train( model_name, train_data_path, output_dir, torch_dtype, add_special_tok
         model=model, 
         args=training_args, 
         processing_class=tokenizer, 
-        train_dataset=train_data)
-    
-    # DEBUGGING:
-    train_loader = trainer.get_train_dataloader()
-    # print("drop_last:", train_loader.drop_last)
-    # print("len(train_loader):", len(train_loader))
+        train_dataset=train_data,
+        use_sampling=sample,
+        threshold_column=threshold_col,
+        threshold=threshold_value,
+        sampling_ratio=sampling_ratio
+        )
 
     # Train
     trainer.train()
@@ -75,6 +74,10 @@ def main():
     parser.add_argument("--output_dir", type=str, default=None)
     parser.add_argument('--torch_dtype', type=str, default='bfloat16')
     parser.add_argument("--add_special_tokens", action='store_true', help='Set this flag to true', default=False)
+    parser.add_argument('--sample', action='store_true', help='Set the flag to true if sampling based data creation is required', default=None)
+    parser.add_argument('--sampling_ratio', type=float, default=0.9, help='Sampling amount for below threshold values')
+    parser.add_argument('--threshold_col', type=str, default=None, help='Column that needs to be used for thresholding')
+    parser.add_argument('--threshold_value', type=float, default=None, help='Threshold value to use for spliting the data based on threshold_col')
     parser.add_argument("--epochs", type=int, default=3)
     parser.add_argument("--max_steps", type=int, default=-1)
     parser.add_argument("--lr", type=float, default=1e-6)
@@ -92,6 +95,10 @@ def main():
         output_dir=args.output_dir,
         torch_dtype=args.torch_dtype,
         add_special_tokens=args.add_special_tokens,
+        sample=args.sample,
+        sampling_ratio=args.sampling_ratio,
+        threshold_col=args.threshold_col,
+        threshold_value=args.threshold_value,
         epochs=args.epochs,
         max_steps=args.max_steps,
         lr=args.lr,

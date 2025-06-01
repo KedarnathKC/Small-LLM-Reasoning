@@ -1,5 +1,5 @@
 import os
-cache_dir = "/datasets/ai/llama3/hub"
+cache_dir = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache'
 os.environ['HF_HOME']=cache_dir
 os.environ['HF_HUB_CACHE']=cache_dir+'/hub'
 
@@ -18,56 +18,14 @@ from trl.trainer import ConstantLengthDataset, DataCollatorForCompletionOnlyLM
 # Reading HF Token
 hf_token = os.getenv("hf_token")
 
-# We will need formatting_prompt_func as for our M4, M5, M6 methods, if we use standardard sft dataset formats, the trainer will call apply_chat_template which will add an additional
-# assistant token that the assistant needs to complete. which wont work for our completion prompts used in M4, M5, M6. 
-def formatting_prompts_func_gsm8k(example):
-    answer = format_answer_gsm8k(example['answer'])
-    text = f'<|start_header_id|>user<|end_header_id|>\n\nGiven the following problem, reason and give a final answer to the problem.\nProblem: {example['question']}\nYour response should end with "The final answer is [answer]" where [answer] is the response to the problem.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{answer}<|eot_id|>'
-    return text
-
-def format_answer_gsm8k(answer):
-        answer = re.sub(r'<<.*?>>', '', answer)
-        answer = answer.replace('####', 'The final answer is')
-        return answer
-
-def formatting_prompts_func_wnc(example):
-    with open('./prompts/neutralization.json') as fp:
-        task_prompt = json.load(fp)
-    system_msg= f'<|start_header_id|>system<|end_header_id|>\n\n{task_prompt['system_msg']}<|eot_id|>'
-    user_msg= f'<|start_header_id|>user<|end_header_id|>\n\n{task_prompt['user_msg'].format(instruction=task_prompt['task_prompt'], question=example['input'])}<|eot_id|>'
-    rationale= example['rationale'] if 'rationale' in example else '' # vanilla sft using off-the-shelf data doesn't have rationale
-    assistant_msg=f'<|start_header_id|>assistant<|end_header_id|>\n\n{task_prompt['assistant_msg'].format(rationale=rationale, response=example['edits'])}<|eot_id|>'    
-    text= system_msg + user_msg + assistant_msg
-    return text
-
-def formatting_prompts_func_gec(example):
-    with open('./prompts/gec.json') as fp:
-        task_prompt = json.load(fp)
-    system_msg= f'<|start_header_id|>system<|end_header_id|>\n\n{task_prompt['system_msg']}<|eot_id|>'
-    user_msg= f'<|start_header_id|>user<|end_header_id|>\n\n{task_prompt['user_msg'].format(instruction=task_prompt['task_prompt'], question=example['input'])}<|eot_id|>'
-    rationale= example['rationale'] if 'rationale' in example else '' # vanilla sft using off-the-shelf data doesn't have rationale
-    # For GEC multiple editors are allowed, so when we use off-the-shelf data we need to choose one of the output or else train it as n different examples
-    # Using to determine off-the-shelf data or custom data
-    if 'rationale' in example:
-        assistant_msg=f'<|start_header_id|>assistant<|end_header_id|>\n\n{task_prompt['assistant_msg'].format(rationale=rationale, response=example['output'])}<|eot_id|>' 
-    else: # Currently taking first output for off-the-shelf data
-        assistant_msg=f'<|start_header_id|>assistant<|end_header_id|>\n\n{task_prompt['assistant_msg'].format(rationale=rationale, response=example['output'][0])}<|eot_id|>' 
-    text= system_msg + user_msg + assistant_msg
-    return text
-
-formatting_funcs = {
-    'gsm8k': formatting_prompts_func_gsm8k,
-    'wnc': formatting_prompts_func_wnc,
-    'gec': formatting_prompts_func_gec
-}
+# data is in preference-style. So to create sft data just join prompt+chosen
+def formatting_func(example):
+    return {'input_ids': example['prompt_input_ids']+example['chosen_input_ids']}
 
 def finetune(model_name, train_data_path, output_dir, formatting_func, add_special_tokens, sample, sampling_ratio, threshold_col, threshold_value, lora, epochs, max_steps, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
     # Loading data
-    train_data= load_from_disk(train_data_path)
-
-    # Giving the entire path to local folder
-    # model_name = cache_dir + '/' + model_name
-    print(f'Training model: {model_name}')
+    train_data= load_dataset('json', data_files=train_data_path)['train']
+    train_data=train_data.map(lambda ex: formatting_func(ex))
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, token=hf_token, cache_dir=cache_dir)
     tokenizer.pad_token_id = tokenizer.eos_token_id
@@ -80,15 +38,11 @@ def finetune(model_name, train_data_path, output_dir, formatting_func, add_speci
     response_template = "<|start_header_id|>assistant<|end_header_id|>\n\n"
     
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
-    
-    # Deciding which formatting_prompt_func to use
-    formatting_prompts_func= formatting_funcs[formatting_func]
 
     # Set up the trainer
     training_args = SFTConfig(
         model_init_kwargs={
             "torch_dtype": "bfloat16",
-            # "local_files_only": True,
             "cache_dir":cache_dir
         },
         output_dir=output_dir,
@@ -104,7 +58,7 @@ def finetune(model_name, train_data_path, output_dir, formatting_func, add_speci
         save_strategy="steps",
         save_steps=100,
         logging_steps=100,
-        # Using this 3072(prompt) + 512(output). The 3072(prompt) is taken from LLaMA : https://huggingface.co/datasets/meta-llama/Llama-3.2-1B-Instruct-evals?row=0
+        # For gsm8k: Using this 3072(prompt) + 512(output). The 3072(prompt) is taken from LLaMA : https://huggingface.co/datasets/meta-llama/Llama-3.2-1B-Instruct-evals?row=0
         max_seq_length  = max_seq_length
     )
 
@@ -127,7 +81,6 @@ def finetune(model_name, train_data_path, output_dir, formatting_func, add_speci
             model=model_name,
             args=training_args,
             train_dataset=train_data,
-            formatting_func=formatting_prompts_func,
             data_collator=collator,
             tokenizer=tokenizer,
             peft_config=peft_config,
@@ -160,8 +113,9 @@ def main():
     # Directly hard-coding response-template in the start_finetuning func, due to the issue raised below.
     # parser.add_argument('--response_template', type=str, default=None) 
     parser.add_argument("--output_dir", type=str, default=None)
-    parser.add_argument("--formatting_func", type=str, choices=list(formatting_funcs.keys()), required=True,help='Function to call to format the data during SFT')
-    parser.add_argument("--add_special_tokens", action='store_true', help='Set this flag to true', default=True)
+    # We don't require add_special_tokens as we are passing a tokenized data
+    # Still keeping it here, when we pass untokenized data. We will then need to pass this to as a TrainingArgument and handle it in CustomSFTTrainer
+    # parser.add_argument("--add_special_tokens", action='store_true', help='Set this flag to true', default=True)
     parser.add_argument('--sample', action='store_true', help='Set the flag to true if sampling based data creation is required', default=None)
     parser.add_argument('--sampling_ratio', type=float, default=0.9, help='Sampling amount for below threshold values')
     parser.add_argument('--threshold_col', type=str, default=None, help='Column that needs to be used for thresholding')
@@ -193,7 +147,7 @@ def main():
         # response_template=args.response_template
         output_dir=args.output_dir, 
         formatting_func=args.formatting_func,
-        add_special_tokens=args.add_special_tokens,
+        # add_special_tokens=args.add_special_tokens,
         sample=args.sample,
         sampling_ratio=args.sampling_ratio,
         threshold_col=args.threshold_col,

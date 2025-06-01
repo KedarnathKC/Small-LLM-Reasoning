@@ -4,20 +4,21 @@ import random
 import numpy as np
 from datasets import load_from_disk, Dataset, load_dataset, concatenate_datasets
 
-def formatting_prompts_func_gsm8k(questions):
-    final_prompts=[]
-    for question in questions:
-        prompt = f'<|start_header_id|>user<|end_header_id|>\n\nGiven the following problem, reason and give a final answer to the problem.\nProblem: {question}\nYour response should end with "The final answer is [answer]" where [answer] is the response to the problem.\n<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n'
-        final_prompts.append(prompt)
-    return final_prompts
+def formatting_prompts_func_gsm8k(example):
+    with open('./prompts/gsmm8k.json') as fp:
+        task_prompt = json.load(fp)
+    system_msg= f'<|start_header_id|>system<|end_header_id|>\n\n{task_prompt['system_msg']}<|eot_id|>'
+    user_msg= f'<|start_header_id|>user<|end_header_id|>\n\n{task_prompt['user_msg'].format(instruction=task_prompt['task_prompt'], question=example['question'])}<|eot_id|>'
+    assistant_msg=f'<|start_header_id|>assistant<|end_header_id|>\n\n'    
+    text = system_msg + user_msg + assistant_msg
+    return text
 
 def formatting_prompts_func_wnc(example):
     with open('./prompts/neutralization.json') as fp:
         task_prompt = json.load(fp)
     system_msg= f'<|start_header_id|>system<|end_header_id|>\n\n{task_prompt['system_msg']}<|eot_id|>'
     user_msg= f'<|start_header_id|>user<|end_header_id|>\n\n{task_prompt['user_msg'].format(instruction=task_prompt['task_prompt'], question=example['input'])}<|eot_id|>'
-    rationale= example['rationale'] if 'rationale' in example else '' # vanilla sft using off-the-shelf data doesn't have rationale
-    assistant_msg=f'<|start_header_id|>assistant<|end_header_id|>\n\n{task_prompt['assistant_msg'].format(rationale=rationale, response=example['edits'])}<|eot_id|>'    
+    assistant_msg=f'<|start_header_id|>assistant<|end_header_id|>\n\n'    
     text= system_msg + user_msg + assistant_msg
     return text
 
@@ -26,16 +27,10 @@ def formatting_prompts_func_gec(example):
         task_prompt = json.load(fp)
     system_msg= f'<|start_header_id|>system<|end_header_id|>\n\n{task_prompt['system_msg']}<|eot_id|>'
     user_msg= f'<|start_header_id|>user<|end_header_id|>\n\n{task_prompt['user_msg'].format(instruction=task_prompt['task_prompt'], question=example['input'])}<|eot_id|>'
-    rationale= example['rationale'] if 'rationale' in example else '' # vanilla sft using off-the-shelf data doesn't have rationale
-    # For GEC multiple editors are allowed, so when we use off-the-shelf data we need to choose one of the output or else train it as n different examples
-    # Using to determine off-the-shelf data or custom data
-    if 'rationale' in example:
-        assistant_msg=f'<|start_header_id|>assistant<|end_header_id|>\n\n{task_prompt['assistant_msg'].format(rationale=rationale, response=example['output'])}<|eot_id|>' 
-    else: # Currently taking first output for off-the-shelf data
-        assistant_msg=f'<|start_header_id|>assistant<|end_header_id|>\n\n{task_prompt['assistant_msg'].format(rationale=rationale, response=example['output'][0])}<|eot_id|>' 
+    assistant_msg=f'<|start_header_id|>assistant<|end_header_id|>\n\n' 
     text= system_msg + user_msg + assistant_msg
     return text
-
+    
 formatting_funcs = {
     'gsm8k': formatting_prompts_func_gsm8k,
     'wnc': formatting_prompts_func_wnc,
@@ -110,6 +105,8 @@ def create_preference_data_with_teacher_gen(data_path, teacher_data_path, studen
     '''
         Function that converts the given dataset into preference dataset with additional columns for future filtering.
     '''
+    # Using raw dataset to construct prompt although we are having the prompt in teacher_data and student_data.
+    # This is because, the prompt in teacher_data and student_data has Cutting Knowledge data and Today Date in its system prompt.
     data = load_from_disk(data_path)
     teacher_data = load_dataset('json',data_files=teacher_data_path)['train']
     student_data = load_dataset('json',data_files=student_data_path)['train']
@@ -123,8 +120,8 @@ def create_preference_data_with_teacher_gen(data_path, teacher_data_path, studen
     prompts=[]
     for ex in data:
         prompts.append(formatting_prompts_func(ex))
-    chosen= [tr_output[0] for tr_output in teacher_data['output']] 
-    rejected= student_data['student_reasoning']
+    chosen= [tr_output[0]+'<|eot_id|>' for tr_output in teacher_data['output']] # TODO: need to change output -> model_output
+    rejected= [text+'<|eot_id|>' for text in student_data['student_reasoning']]
 
     new_data = {
         'prompt': prompts,

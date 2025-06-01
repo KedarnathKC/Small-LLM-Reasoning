@@ -48,10 +48,10 @@ def get_score(data_path, model_output_path, m2_file_path, reference_col):
     test = pd.DataFrame(load_from_disk(data_path))    
     df = pd.read_json(model_output_path)
 
-    df['model_answer']= df.apply(get_model_answer,axis=1)
+    df['gt_answer']= test[reference_col]
     df['model_rationale']= df.apply(get_model_rationale,axis=1)
-    df['GT_Answer']= test[reference_col]
-
+    df['model_answer']= df.apply(get_model_answer,axis=1)
+    
     f1_score, score = evaluate(m2_file_path, df['model_answer'].tolist())
     df['score']=score
 

@@ -1,17 +1,106 @@
-from transformers.trainer import *
-from trl import DPOTrainer
 import sys
+from trl import DPOTrainer
+from transformers.trainer import *
+from small_llm_reasoning.data.data_sampler import BatchSampler
 
 '''
 Need to implement a CustomTrainer and make CustomizedSFTTrainer and CustomDPOTrainer as subclasses of CustomTrainer since
 both CustomizedSFTTrainer and CustomDPOTrainer are using the same customization in two functions (set_initial_training_values and _inner_training_loop).
 
-DOUBT: 
-CustomDPOTrainer in that case will just make CustomTrainer as its parent but wont have any modification in its functions. So if i just write __init__ function
-and call super.__int__() wont that be enough?
 '''
 
 class CustomDPOTrainer(DPOTrainer):
+    # Added _custom_batch_sampler
+    def __init__(
+        self,
+        *args,
+        use_sampling: bool = False,
+        threshold_column: str = None,
+        threshold: float = None,
+        sampling_ratio: float = None,
+        **kwargs
+    ):
+        super().__init__(*args, **kwargs) 
+        self.use_sampling=use_sampling
+        self.threshold_column = threshold_column
+        self.threshold = threshold
+        self.sampling_ratio = sampling_ratio
+
+    # Overrides the default trainers get_train_dataloader to help with sampling of data using thresholding
+    def get_train_dataloader(self):
+        if not self.use_sampling:
+            # Fall back to default SFTTrainer behavior
+            print('Using default get_train_dataloader() function')
+            return super().get_train_dataloader()
+        
+        # 3. instantiate your sampler ONCE per epoch, on the tokenized dataset
+        print('Using sampling based data loader')
+        sampler = BatchSampler(
+            dataset=self.train_dataset,
+            batch_size=self.args.per_device_train_batch_size,
+            threshold_column=self.threshold_column,
+            threshold=self.threshold,
+            sampling_ratio=self.sampling_ratio
+        )
+        train_dataset = self._remove_unused_columns(self.train_dataset, description="training")
+        return DataLoader(
+            train_dataset,
+            batch_sampler=sampler,
+            collate_fn=self.data_collator,
+            num_workers=self.args.dataloader_num_workers,
+        )
+
+    # Added logic to skip preprocessing and tokenization when the data is already tokenized.
+    def _prepare_dataset(
+        self,
+        dataset: Union[Dataset, IterableDataset],
+        processing_class: Union[PreTrainedTokenizerBase, BaseImageProcessor, FeatureExtractionMixin, ProcessorMixin],
+        args: DPOConfig,
+        dataset_name: str,
+    ) -> Union[Dataset, IterableDataset]:
+
+        is_processed = "prompt_input_ids" in column_names and "chosen_input_ids" in column_names and "rejected_input_ids" in column_names
+
+        if is_processed:
+            return dataset
+
+        # Build the kwargs for the `map` function
+        map_kwargs = {"writer_batch_size": 10}
+        if isinstance(dataset, Dataset):  # IterableDataset does not support num_proc
+            map_kwargs["num_proc"] = args.dataset_num_proc
+
+        with PartialState().main_process_first():
+            # Extract prompt if needed
+            if isinstance(dataset, Dataset):  # `IterableDataset.map` does not support `desc`
+                map_kwargs["desc"] = f"Extracting prompt in {dataset_name} dataset"
+            dataset = dataset.map(maybe_extract_prompt, **map_kwargs)
+
+            # Apply the chat template if needed
+            if isinstance(dataset, Dataset):  # `IterableDataset.map` does not support `desc`
+                map_kwargs["desc"] = f"Applying chat template to {dataset_name} dataset"
+            dataset = dataset.map(
+                maybe_apply_chat_template, fn_kwargs={"tokenizer": processing_class, "tools": args.tools}, **map_kwargs
+            )
+
+            # Tokenize the dataset
+            if isinstance(dataset, Dataset):  # `IterableDataset.map` does not support `desc`
+                map_kwargs["desc"] = f"Tokenizing {dataset_name} dataset"
+
+            dataset = dataset.map(
+                self.tokenize_row if not self.is_vision_model else self.process_row,
+                remove_columns=["chosen", "rejected"],
+                fn_kwargs={
+                    "processing_class": processing_class,
+                    "max_prompt_length": args.max_prompt_length,
+                    "max_completion_length": args.max_completion_length,
+                    # for enc-dec, we add the special tokens ([bos_token] + prompt + [eos_token]; completion + [eos_token])
+                    "add_special_tokens": False,
+                },
+                **map_kwargs,
+            )
+
+        return dataset
+
     # Fixed the max_steps calculation
     def set_initial_training_values(
         self, args: TrainingArguments, dataloader: DataLoader, total_train_batch_size: int
