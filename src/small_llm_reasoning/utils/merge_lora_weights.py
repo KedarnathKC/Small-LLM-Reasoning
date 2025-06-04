@@ -4,11 +4,9 @@ import argparse
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
 
-
-
-cache_dir = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache/'
+cache_dir = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache'
 os.environ['HF_HOME'] = cache_dir
-
+os.environ['HF_HUB_CACHE']=cache_dir+'/hub'
 
 def add_lora(model_name, lora_path, save_path, torch_dtype):
     print(f"Merging model at {lora_path}")

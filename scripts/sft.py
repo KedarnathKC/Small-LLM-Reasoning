@@ -1,4 +1,8 @@
 import os
+cache_dir = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache'
+os.environ['HF_HOME']=cache_dir
+os.environ['HF_HUB_CACHE']=cache_dir+'/hub'
+
 import re
 import json
 import torch
@@ -8,45 +12,20 @@ from trl import  SFTConfig, SFTTrainer
 from datasets import load_from_disk, load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 from small_llm_reasoning.trainer.sft_trainer import CustomizedSFTTrainer
+from small_llm_reasoning.data.data_sampler import BatchSampler
 from trl.trainer import ConstantLengthDataset, DataCollatorForCompletionOnlyLM
-
-
-cache_dir = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache'
-os.environ['TRANSFORMERS_CACHE'] = cache_dir
 
 # Reading HF Token
 hf_token = os.getenv("hf_token")
 
-# We will need formatting_prompt_func as for our M4, M5, M6 methods, if we use standardard sft dataset formats, the trainer will call apply_chat_template which will add an additional
-# assistant token that the assistant needs to complete. which wont work for our completion prompts used in M4, M5, M6. 
-def formatting_prompts_func_gsm8k(example):
-    answer = format_answer_gsm8k(example['answer'])
-    text = f'<|start_header_id|>user<|end_header_id|>\n\nGiven the following problem, reason and give a final answer to the problem.\nProblem: {example['question']}\nYour response should end with "The final answer is [answer]" where [answer] is the response to the problem.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{answer}<|eot_id|>'
-    return text
+# data is in preference-style. So to create sft data just join prompt+chosen
+def formatting_func(example):
+    return {'input_ids': example['prompt_input_ids']+example['chosen_input_ids']}
 
-def format_answer_gsm8k(answer):
-        answer = re.sub(r'<<.*?>>', '', answer)
-        answer = answer.replace('####', 'The final answer is')
-        return answer
-
-def formatting_prompts_func_wnc(example):
-    with open('./prompts/neutralization.json') as fp:
-        task_prompt = json.load(fp)
-    system_msg= f'<|start_header_id|>system<|end_header_id|>\n\n{task_prompt['system_msg']}<|eot_id|>'
-    user_msg= f'<|start_header_id|>user<|end_header_id|>\n\n{task_prompt['user_msg'].format(instruction=task_prompt['task_prompt'], question=example['input'])}<|eot_id|>'
-    rationale= example['rationale'] if 'rationale' in example else '' # vanilla sft using off-the-shelf data doesn't have rationale
-    assistant_msg=f'<|start_header_id|>assistant<|end_header_id|>\n\n{task_prompt['assistant_msg'].format(rationale=rationale, response=example['edits'])}<|eot_id|>'    
-    text= system_msg + user_msg + assistant_msg
-    return text
-
-formatting_funcs = {
-    'gsm8k': formatting_prompts_func_gsm8k,
-    'wnc': formatting_prompts_func_wnc
-}
-
-def finetune(model_name, train_data_path, output_dir, formatting_func, add_special_tokens, lora, epochs, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
+def finetune(model_name, train_data_path, output_dir, formatting_func, add_special_tokens, sample, sampling_ratio, threshold_col, threshold_value, lora, epochs, max_steps, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
     # Loading data
-    train_data= load_from_disk(train_data_path)
+    train_data= load_dataset('json', data_files=train_data_path)['train']
+    train_data=train_data.map(lambda ex: formatting_func(ex))
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, token=hf_token, cache_dir=cache_dir)
     tokenizer.pad_token_id = tokenizer.eos_token_id
@@ -59,9 +38,6 @@ def finetune(model_name, train_data_path, output_dir, formatting_func, add_speci
     response_template = "<|start_header_id|>assistant<|end_header_id|>\n\n"
     
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
-    
-    # Deciding which formatting_prompt_func to use
-    formatting_prompts_func= formatting_funcs[formatting_func]
 
     # Set up the trainer
     training_args = SFTConfig(
@@ -70,16 +46,19 @@ def finetune(model_name, train_data_path, output_dir, formatting_func, add_speci
             "cache_dir":cache_dir
         },
         output_dir=output_dir,
-        num_train_epochs=epochs,
+        # using max-steps
+        # num_train_epochs=epochs,
+        max_steps=max_steps,
         learning_rate=lr,
         lr_scheduler_type=lr_scheduler_type,
         weight_decay=weight_decay,
         warmup_ratio=warmup,
         per_device_train_batch_size=per_device_train_batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
-        save_strategy="epoch",
+        save_strategy="steps",
+        save_steps=100,
         logging_steps=100,
-        # Using this 3072(prompt) + 512(output). The 3072(prompt) is taken from LLaMA : https://huggingface.co/datasets/meta-llama/Llama-3.2-1B-Instruct-evals?row=0
+        # For gsm8k: Using this 3072(prompt) + 512(output). The 3072(prompt) is taken from LLaMA : https://huggingface.co/datasets/meta-llama/Llama-3.2-1B-Instruct-evals?row=0
         max_seq_length  = max_seq_length
     )
 
@@ -102,10 +81,13 @@ def finetune(model_name, train_data_path, output_dir, formatting_func, add_speci
             model=model_name,
             args=training_args,
             train_dataset=train_data,
-            formatting_func=formatting_prompts_func,
             data_collator=collator,
             tokenizer=tokenizer,
-            peft_config=peft_config
+            peft_config=peft_config,
+            use_sampling=sample,
+            threshold_column=threshold_col,
+            threshold=threshold_value,
+            sampling_ratio=sampling_ratio
         )
     else:
         trainer = CustomizedSFTTrainer(
@@ -114,7 +96,11 @@ def finetune(model_name, train_data_path, output_dir, formatting_func, add_speci
             train_dataset=train_data,
             formatting_func=formatting_prompts_func,
             data_collator=collator,
-            tokenizer=tokenizer
+            tokenizer=tokenizer,
+            use_sampling=sample,
+            threshold_column=threshold_col,
+            threshold=threshold_value,
+            sampling_ratio=sampling_ratio
         )
          
     # Start training
@@ -127,10 +113,16 @@ def main():
     # Directly hard-coding response-template in the start_finetuning func, due to the issue raised below.
     # parser.add_argument('--response_template', type=str, default=None) 
     parser.add_argument("--output_dir", type=str, default=None)
-    parser.add_argument("--formatting_func", type=str, choices=list(formatting_funcs.keys()), required=True,help='Function to call to format the data during SFT')
-    parser.add_argument("--add_special_tokens", action='store_true', help='Set this flag to true', default=True)
-    parser.add_argument("--lora", action="store_true", help="Set this flag to true", default=None)
-    parser.add_argument("--epochs", type=int, default=1)
+    # We don't require add_special_tokens as we are passing a tokenized data
+    # Still keeping it here, when we pass untokenized data. We will then need to pass this to as a TrainingArgument and handle it in CustomSFTTrainer
+    # parser.add_argument("--add_special_tokens", action='store_true', help='Set this flag to true', default=True)
+    parser.add_argument('--sample', action='store_true', help='Set the flag to true if sampling based data creation is required', default=None)
+    parser.add_argument('--sampling_ratio', type=float, default=0.9, help='Sampling amount for below threshold values')
+    parser.add_argument('--threshold_col', type=str, default=None, help='Column that needs to be used for thresholding')
+    parser.add_argument('--threshold_value', type=float, default=None, help='Threshold value to use for spliting the data based on threshold_col')
+    parser.add_argument("--lora", action="store_true", help="Set this flag to true if you want to use LoRA Finetuning", default=None)
+    parser.add_argument("--epochs", type=int, default=3)
+    parser.add_argument("--max_steps", type=int, default=-1)
     parser.add_argument("--lr", type=float, default=2e-5)
     parser.add_argument("--lr_scheduler_type", type=str, default="linear")
     parser.add_argument("--warmup", type=float, default=0.1)
@@ -155,9 +147,14 @@ def main():
         # response_template=args.response_template
         output_dir=args.output_dir, 
         formatting_func=args.formatting_func,
-        add_special_tokens=args.add_special_tokens,
+        # add_special_tokens=args.add_special_tokens,
+        sample=args.sample,
+        sampling_ratio=args.sampling_ratio,
+        threshold_col=args.threshold_col,
+        threshold_value=args.threshold_value,
         lora=args.lora,
         epochs=args.epochs, 
+        max_steps=args.max_steps,
         lr=args.lr, 
         lr_scheduler_type=args.lr_scheduler_type,
         weight_decay=args.weight_decay,

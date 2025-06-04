@@ -1,4 +1,8 @@
 import os
+cache_dir = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache'
+os.environ['HF_HOME']=cache_dir
+os.environ['HF_HUB_CACHE']=cache_dir+'/hub'
+
 import gc
 import torch
 from typing import Sequence, Optional, Union, Iterable, List, Dict
@@ -18,6 +22,8 @@ def llama_forward(
     model_path: Optional[str] = None,
     max_tokens: int = 300,  # Generation length
     temperature: float = 0.1,
+    top_p: float = 1,
+    top_k: float = -1,
     n_samples: int = 8,
     n_gpus: int = 4,
     log_probs:int | None = None
@@ -28,7 +34,7 @@ def llama_forward(
     assert model is not None or model_path is not None, "model or model_path must be provided"
 
     if temperature == 0.0:
-        # best_of must be 1 when using greedy decoding
+        # best_of must be 1 when using greedy decoding. setting n sets best_of to 1.
         n_samples = 1
 
     stop_strings =  ['<|eot_id|>', '<|start_header_id|>user<|end_header_id|>', 'Q:', '</s>', '<|im_end|>']
@@ -37,8 +43,9 @@ def llama_forward(
                                      temperature=temperature,
                                      max_tokens=max_tokens,
                                      stop=stop_strings,
-                                    #  seed=1,
-                                     logprobs=log_probs
+                                     logprobs=log_probs,
+                                     top_p=top_p,
+                                     top_k=top_k
                                      )
 
     # Create an LLM.

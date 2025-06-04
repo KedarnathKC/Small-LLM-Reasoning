@@ -3,29 +3,49 @@ cache_dir = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transfor
 os.environ['HF_HOME']=cache_dir
 os.environ['HF_HUB_CACHE']=cache_dir+'/hub'
 
-import json
-import argparse
+import numpy as np
 import gc
+import time
+import json
 import torch
+import argparse
 from tqdm import tqdm
 from datasets import load_from_disk, load_dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 hf_token=os.getenv('hf_token')
 
-def get_logprobs(model_path, tokenized_data_path, student_data_path, teacher_data_path, student_logprobs_path, batch_size, output_path, torch_dtype='bfloat16'):
+def calculate_token_level_logprobs_ratio(teacher_logprobs, student_logprobs):
+    token_level_logprobs=[]
+    for i in range(len(student_logprobs)):
+        teacher_logprobs= np.array(teacher_logprobs)
+        student_logprobs= np.array(student_logprobs)       
+        token_level_logprobs.append(np.subtract(teacher_logprobs,student_logprobs))
+    return token_level_logprobs
+
+def calculate_sentence_level_logprobs_ratio(teacher_logprobs, student_logprobs):
+    sentence_level_logprobs=[]
+    teacher_sentence_logprobs=[]
+    student_sentence_logprobs=[]
+    for i in range(len(student_logprobs)):
+        teacher_sentence_logprobs.append(np.mean(np.array(teacher_logprobs[i])))
+        student_sentence_logprobs.append(np.mean(np.array(student_logprobs[i])))
+    sentence_level_logprobs=  np.subtract(teacher_sentence_logprobs,student_sentence_logprobs)
+    return sentence_level_logprobs
+
+def get_logprobs(model_path, tokenized_prompt_path, student_generation_path, teacher_generation_path, student_logprobs_path, batch_size, output_path, torch_dtype='bfloat16'):
     '''
     model_path:
-    tokenized_data_path:
-    student_data_path:
-    teacher_data_path:
+    tokenized_prompt_path:
+    student_generation_path:
+    teacher_generation_path:
     batch_size:
     output_path:
     '''
     # Loading Data
-    data_student = load_dataset('json', data_files=student_data_path)['train']
-    data_tokenized = load_from_disk(tokenized_data_path)
-    data_teacher = load_dataset('json', data_files=teacher_data_path)['train']    
+    data_student = load_dataset('json', data_files=student_generation_path)['train']
+    data_tokenized = load_from_disk(tokenized_prompt_path)
+    data_teacher = load_dataset('json', data_files=teacher_generation_path)['train']    
 
     tokenizer = AutoTokenizer.from_pretrained(
         model_path,
@@ -44,8 +64,9 @@ def get_logprobs(model_path, tokenized_data_path, student_data_path, teacher_dat
     
     # Open and read the JSON file
     with open(student_logprobs_path, 'r') as file:
-        all_outputs = json.load(file)
+        student_logprobs = json.load(file)
 
+    all_outputs = []
     for i in tqdm(range(0,data_student.num_rows,batch_size)):
         examples=[]
         questions=[]
@@ -69,7 +90,8 @@ def get_logprobs(model_path, tokenized_data_path, student_data_path, teacher_dat
         )['input_ids'].to(model.device)
 
         # Forward Pass
-        outputs = model(examples)
+        with torch.no_grad():  # Ensure no gradients are computed
+            outputs = model(examples)
 
         probs = torch.log_softmax(outputs.logits, dim=-1).detach()
         probs = probs[:, :-1, :]
@@ -79,50 +101,89 @@ def get_logprobs(model_path, tokenized_data_path, student_data_path, teacher_dat
         for j in range(examples.shape[0]):
             answer_start_idx = questions[j].shape[1]-1
             answer_end_idx = answer_start_idx + answers[j].shape[1]
-            logprobs=[]
+            teacher_logprobs=[]
             for token, prob in zip(examples[j][answer_start_idx:answer_end_idx], gen_probs[j][answer_start_idx:answer_end_idx]):
-                logprobs.append(prob.item())
-            all_outputs[i+j]['teacher_log_probs']=logprobs
-            all_outputs[i+j]['teacher_correctness']=data_teacher['score'][i+j]
+                teacher_logprobs.append(prob.item())
+            
+            all_outputs.append(
+                {
+                    'prompt':student_logprobs['prompt'][i+j],
+                    'prompt_input_ids':student_logprobs['prompt_input_ids'][i+j],
+                    'gt_reference':student_logprobs[answer_col][i+j],
+                    # evaluation
+                    'gt_answer':student_logprobs['gt_answer'][i+j],
+                    'student_answer':student_logprobs['model_answer'][i+j],
+                    'student_score':student_logprobs['score'][i+j]
+                    'teacher_answer':data_teacher['model_answer'][i+j],
+                    'teacher_score':data_teacher['score'][i+j],
+                    # assessment
+                    'teacher_output':data_teacher['model_output'][i+j][0],
+                    'student_output':student_logprobs['model_output'][i+j][0], 
+                    'chosen_input_ids':data_teacher['model_token_ids'][i+j][0],
+                    'rejected_input_ids':student_logprobs['model_token_ids'][i+j][0],
+                    'student_log_probs_of_student':student_logprobs['student_log_probs_of_student'][i+j],
+                    'teacher_log_probs_of_student':teacher_logprobs,
+                }
+            )
 
-        # Clearing memory to avoid OOM issues
-        del examples, outputs, probs, gen_probs, logprobs, questions, answers
+        # Move tensors to CPU and delete them
+        examples = examples.cpu()
+        outputs.logits = outputs.logits.cpu()
+        probs = probs.cpu()
+        gen_probs = gen_probs.cpu()
+        
+        # Clear memory
+        del examples, outputs, probs, gen_probs, teacher_logprobs, questions, answers
         gc.collect()  # Trigger Python's garbage collector
         torch.cuda.empty_cache()  # Free unused GPU memory
-    
+
+    # Calculate the token and sentence level logprobs ratio
+    token_level_logprobs= calculate_token_level_logprobs(all_outputs['teacher_log_probs_of_student'], all_outputs['student_log_probs_of_student'])
+    sentence_level_logprobs= calculate_sentence_level_logprobs(all_outputs['teacher_log_probs_of_student'], all_outputs['student_log_probs_of_student'])
+    all_outputs['teacher_student_token_log_prob_ratio']=token_level_logprobs  
+    all_outputs['teacher_student_sent_log_prob_ratio']=sentence_level_logprobs
+
     output_dir = os.path.dirname(output_path)
     if output_dir:  # Check if there is a directory part in the path
         os.makedirs(output_dir, exist_ok=True)  # Creates directory if it doesn't exist
 
     with open(output_path, "w") as f:
         json.dump(all_outputs, f, indent=4)
+    
+    # Clear all remaining memory
+    del data_student, data_tokenized, data_teacher, tokenizer, model
+    del all_outputs
+    gc.collect()  # Trigger Python's garbage collector
+    torch.cuda.empty_cache()  # Free unused GPU memory
+    
+    # Force garbage collection again after a short delay
+    time.sleep(1)  # Give some time for memory to be freed
+    gc.collect()
+    torch.cuda.empty_cache()
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_path", type=str, default=None)
-    parser.add_argument("--tokenized_data_path", type=str, default=None)
-    parser.add_argument("--student_data_path", type=str, default=None) 
-    parser.add_argument("--teacher_data_path", type=str, default=None)
+    parser.add_argument("--tokenized_prompt_path", type=str, default=None)
+    parser.add_argument("--student_generation_path", type=str, default=None) 
+    parser.add_argument("--teacher_generation_path", type=str, default=None)
     parser.add_argument("--student_logprobs_path", type=str, required=True)
     parser.add_argument('--output_path', type=str, required=True)
     parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument('--torch_dtype', type=str, default='bfloat16')
-    # We no longer require exp-id as we now give the explicit path till the exp directory.
-    # parser.add_argument("--exp_id", type=str, help="Used in the output path, e.g., exp-1.1")
-    # parser.add_argument("--eval_id", type=str, help="Used in the output path, e.g., eval-1")
     args = parser.parse_args() 
 
     get_logprobs(
         model_path=args.model_path,
-        tokenized_data_path=args.tokenized_data_path,
-        student_data_path=args.student_data_path,
-        teacher_data_path=args.teacher_data_path,
+        tokenized_prompt_path=args.tokenized_prompt_path,
+        student_generation_path=args.student_generation_path,
+        teacher_generation_path=args.teacher_generation_path,
         student_logprobs_path=args.student_logprobs_path,
         output_path=args.output_path,
         batch_size=args.batch_size,
         torch_dtype=args.torch_dtype
-        )
+    )
 
 if __name__=='__main__':
     main()
