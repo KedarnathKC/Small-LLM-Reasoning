@@ -31,13 +31,13 @@ def extract_corrected_text(model_response: str) -> str:
 
 def get_model_answer(row):
     # TODO: Currently, only evaluating the first generation for each example.
-    _, answer= extract_corrected_text(row['output'][0])
+    _, answer= extract_corrected_text(row['model_output'][0])
     answer=' '.join(word_tokenize(answer))
     return answer
 
 def get_model_rationale(row):
     # TODO: Currently, only evaluating the first generation for each example.
-    rationale, _= extract_corrected_text(row['output'][0])
+    rationale, _= extract_corrected_text(row['model_output'][0])
     return rationale
     
 def get_score(data_path, model_output_path, m2_file_path, reference_col):

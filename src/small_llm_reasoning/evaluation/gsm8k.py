@@ -13,7 +13,7 @@ def get_generated_answer(row):
     regex_pattern = r"The final answer is -?\$?([0-9,]+(?:\.[0-9]+)?)"
 
     # TODO: Currently, only evaluating the first generation for each example. 
-    match = re.search(regex_pattern, row['output'][0])
+    match = re.search(regex_pattern, row['model_output'][0])
     if match:
         # Group -1 corresponds to the entire match
         result = match.group(1).replace(",", "")
@@ -23,7 +23,7 @@ def get_generated_answer(row):
     return result
 
 def get_generated_rationale(row):
-    return row['output'][0].split('The final answer is')[0].strip()
+    return row['model_output'][0].split('The final answer is')[0].strip()
 
 def get_score(data_path, model_output_path):
     '''
@@ -39,7 +39,7 @@ def get_score(data_path, model_output_path):
     
     # df['score'] = (df['model_answer'] == test['GT_Answer']).astype(int)
     for i in range(df.shape[0]):
-        df.loc[i,'score'] = exact_match_metric.compute(predictions = [df.iloc[i]['model_answer']], references = [df.iloc[i]['GT_Answer']])['exact_match']
+        df.loc[i,'score'] = exact_match_metric.compute(predictions = [df.iloc[i]['model_answer']], references = [df.iloc[i]['gt_answer']])['exact_match']
     
     score = df['score'].sum()/df.shape[0]
     # Write back the exact scores to model_output_path

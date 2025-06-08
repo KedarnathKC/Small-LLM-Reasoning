@@ -1,8 +1,10 @@
+from dotenv import load_dotenv
 import os
-cache_dir = '/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache'
+cache_dir = "/scratch3/workspace/wenlongzhao_umass_edu-reason/dev_kedar/transformers_cache"
+os.environ['TRANSFORMERS_CACHE'] = cache_dir
 os.environ['HF_HOME']=cache_dir
 os.environ['HF_HUB_CACHE']=cache_dir+'/hub'
-
+load_dotenv()  
 import gc
 import torch
 from typing import Sequence, Optional, Union, Iterable, List, Dict
@@ -29,6 +31,11 @@ def llama_forward(
 
     assert model is not None or model_path is not None, "model or model_path must be provided"
 
+    kwargs={
+        # 'token':os.getenv('HF_TOKEN'),
+        'download_dir':cache_dir,
+    }
+
     if temperature == 0.0:
         # best_of must be 1 when using greedy decoding. setting n sets best_of to 1.
         n_samples = 1
@@ -50,7 +57,9 @@ def llama_forward(
             model=model_path, 
             tokenizer=model_path, 
             tensor_parallel_size=n_gpus, 
+            trust_remote_code=True,
             # enable_lora=enable_lora  
+            **kwargs
         )
 
     all_outputs = model.generate(

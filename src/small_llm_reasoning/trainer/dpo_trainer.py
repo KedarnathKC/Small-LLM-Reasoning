@@ -1,5 +1,5 @@
 import sys
-from trl import DPOTrainer
+from trl import DPOTrainer, DPOConfig
 from transformers.trainer import *
 from small_llm_reasoning.data.data_sampler import BatchSampler
 
@@ -59,7 +59,7 @@ class CustomDPOTrainer(DPOTrainer):
         dataset_name: str,
     ) -> Union[Dataset, IterableDataset]:
 
-        is_processed = "prompt_input_ids" in column_names and "chosen_input_ids" in column_names and "rejected_input_ids" in column_names
+        is_processed = "prompt_input_ids" in dataset.column_names and "chosen_input_ids" in dataset.column_names and "rejected_input_ids" in dataset.column_names
 
         if is_processed:
             return dataset

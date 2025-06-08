@@ -43,12 +43,12 @@ def extract_neutralized_text(model_response: str) -> str:
 
 def get_model_answer(row):
     # TODO: Currently, only evaluating the first generation for each example.
-    _, answer= extract_neutralized_text(row['output'][0])
+    _, answer= extract_neutralized_text(row['model_output'][0])
     return answer
 
 def get_model_rationale(row):
     # TODO: Currently, only evaluating the first generation for each example.
-    rationale, _= extract_neutralized_text(row['output'][0])
+    rationale, _= extract_neutralized_text(row['model_output'][0])
     return rationale
 
 
@@ -77,7 +77,7 @@ def get_score(data_path, model_output_path, input_col, reference_col):
     sari = load("sari")
     sari_scores=[]
     for i in range(df.shape[0]):
-        sari_scores.append(sari.compute(sources=[test[input_col][i]], predictions=[df['model_answer'][i]], references=[df['GT_Answer'][i]])['sari'])
+        sari_scores.append(sari.compute(sources=[test[input_col][i]], predictions=[df['model_answer'][i]], references=[df['gt_answer'][i]])['sari'])
     df['score']=sari_scores
     score = df['score'].sum()/df.shape[0]
 

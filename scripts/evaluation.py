@@ -20,7 +20,7 @@ def natural_sort_key(checkpoint_path):
     match = re.search(r"checkpoint-(\d+)", checkpoint_path)
     return int(match.group(1)) if match else float('inf')  # Send non-matching to the end
 
-def generate(model_path, eval_data_path, m2_file_path, reference_col, max_tokens, log_probs, temperature, top_p, top_k, n_samples, n_gpus, output_path):
+def generate(model_path, eval_data_path, m2_file_path, evaluation_func, input_col, reference_col, max_tokens, log_probs, temperature, top_p, top_k, n_samples, n_gpus, output_path):
     # Loading data
     data = load_from_disk(eval_data_path)
     
@@ -76,11 +76,11 @@ def generate(model_path, eval_data_path, m2_file_path, reference_col, max_tokens
     with open(output_path, "w") as f:
         json.dump(generated_outputs, f, indent=4)
 
-    if args.evaluation_func == 'gsm8k':
+    if evaluation_func == 'gsm8k':
         score = gsm8k.get_score(eval_data_path,output_path)  
-    elif args.evaluation_func == 'gec':
+    elif evaluation_func == 'gec':
         score = gec.get_score(eval_data_path,output_path, m2_file_path, reference_col)  
-    elif args.evaluation_func == 'neutralization':
+    elif evaluation_func == 'neutralization':
         score = neutralization.get_score(eval_data_path,output_path, input_col, reference_col)  
 
     print(f"SCORE of {model_path} : ",score)
@@ -103,7 +103,7 @@ def main():
     parser.add_argument('--input_col', type=str, help='Name of the input text col that needs to be modified')
     parser.add_argument('--reference_col', type=str, help='Name of the reference text col that needs to used for evaluation')
     parser.add_argument("--max_tokens", type=int, default=512)
-    parser.add_argument("--log_probs", action='store_true', help='Set this flag to true', default=False)
+    parser.add_argument("--log_probs", type=int, default=0)
     parser.add_argument("--temperature", type=float, default=0)
     parser.add_argument("--top_p", type=float, default=1)
     parser.add_argument("--top_k", type=int, default=-1)
@@ -136,9 +136,11 @@ def main():
             model_path= model_path,
             eval_data_path=args.eval_data_path, 
             m2_file_path=args.m2_file_path,
+            evaluation_func=args.evaluation_func,
+            input_col=args.input_col,
             reference_col=args.reference_col,
             max_tokens=args.max_tokens, 
-            log_probs=args.log_probs,
+            log_probs=args.log_probs if args.log_probs>0 else None,
             temperature=args.temperature, 
             top_p=args.top_p,
             top_k=args.top_k,

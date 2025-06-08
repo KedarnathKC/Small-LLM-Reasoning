@@ -53,7 +53,7 @@ def get_logprobs(model_path, gt_data_path, tokenized_prompt_path, student_genera
         end = min(i + batch_size, data_student.num_rows)
         for j in range(i, end):
             question = torch.tensor(data_tokenized['input_ids'][j]['prompt_token_ids'], dtype=torch.long).unsqueeze(0)
-            answer = torch.tensor(data_student['token_ids'][j][0], dtype=torch.long).unsqueeze(0)
+            answer = torch.tensor(data_student['model_token_ids'][j][0], dtype=torch.long).unsqueeze(0)
             examples.append(torch.cat((question, answer), dim=1).squeeze(dim=0))
             questions.append(question)
             answers.append(answer)
@@ -87,7 +87,7 @@ def get_logprobs(model_path, gt_data_path, tokenized_prompt_path, student_genera
                     'gt_reference':data_gt[answer_col][i+j],
                     'gt_answer':data_student['gt_answer'][i+j],
                     'student_answer':data_student['model_answer'][i+j],
-                    'student_score':data_student['score'][i+j]
+                    'student_score':data_student['score'][i+j],
                     'student_output':data_student['model_output'][i+j][0], 
                     'rejected_input_ids':data_student['model_token_ids'][i+j][0],
                     'student_log_probs_of_student':logprobs

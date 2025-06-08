@@ -20,9 +20,15 @@ hf_token = os.getenv("hf_token")
 
 # data is in preference-style. So to create sft data just join prompt+chosen
 def formatting_func(example):
-    return {'input_ids': example['prompt_input_ids']+example['chosen_input_ids']}
+    input_ids = example['prompt_input_ids'] + example['chosen_input_ids']
+    attention_mask = [1] * len(input_ids)
 
-def finetune(model_name, train_data_path, output_dir, formatting_func, add_special_tokens, sample, sampling_ratio, threshold_col, threshold_value, lora, epochs, max_steps, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
+    return {
+        "input_ids": input_ids,
+        "attention_mask": attention_mask
+    }
+
+def finetune(model_name, train_data_path, output_dir, sample, sampling_ratio, threshold_col, threshold_value, lora, epochs, max_steps, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_seq_length):
     # Loading data
     train_data= load_dataset('json', data_files=train_data_path)['train']
     train_data=train_data.map(lambda ex: formatting_func(ex))
@@ -62,7 +68,7 @@ def finetune(model_name, train_data_path, output_dir, formatting_func, add_speci
         max_seq_length  = max_seq_length
     )
 
-    training_args.add_special_tokens = add_special_tokens
+    # training_args.add_special_tokens = add_special_tokens
 
     if lora:
         # PEFT config
@@ -94,7 +100,6 @@ def finetune(model_name, train_data_path, output_dir, formatting_func, add_speci
             model=model_name,
             args=training_args,
             train_dataset=train_data,
-            formatting_func=formatting_prompts_func,
             data_collator=collator,
             tokenizer=tokenizer,
             use_sampling=sample,
@@ -146,8 +151,6 @@ def main():
         train_data_path=args.train_data_path, 
         # response_template=args.response_template
         output_dir=args.output_dir, 
-        formatting_func=args.formatting_func,
-        # add_special_tokens=args.add_special_tokens,
         sample=args.sample,
         sampling_ratio=args.sampling_ratio,
         threshold_col=args.threshold_col,

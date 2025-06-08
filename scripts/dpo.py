@@ -11,13 +11,13 @@ from trl import DPOConfig, DPOTrainer
 from small_llm_reasoning.trainer.dpo_trainer import CustomDPOTrainer
 
 
-def train( model_name, train_data_path, output_dir, torch_dtype, add_special_tokens, sample, sampling_ratio, threshold_col, threshold_value, epochs, max_steps, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_length):
+def train( model_name, train_data_path, output_dir, torch_dtype, sample, sampling_ratio, threshold_col, threshold_value, epochs, max_steps, lr, lr_scheduler_type, warmup, weight_decay, per_device_train_batch_size, gradient_accumulation_steps, max_length):
     '''
     '''
 
     # Load data
-    train_data = load_from_disk(train_data_path)
-
+    train_data= load_dataset('json', data_files=train_data_path)['train']
+    
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(
         model_name,
@@ -25,7 +25,7 @@ def train( model_name, train_data_path, output_dir, torch_dtype, add_special_tok
         cache_dir=cache_dir
     )
     tokenizer.pad_token_id = tokenizer.eos_token_id
-    tokenizer.add_special_tokens=add_special_tokens
+    # tokenizer.add_special_tokens=add_special_tokens
 
     model = AutoModelForCausalLM.from_pretrained(
         model_name, 
@@ -73,7 +73,7 @@ def main():
     parser.add_argument("--train_data_path", type=str, default=None)
     parser.add_argument("--output_dir", type=str, default=None)
     parser.add_argument('--torch_dtype', type=str, default='bfloat16')
-    parser.add_argument("--add_special_tokens", action='store_true', help='Set this flag to true', default=False)
+    # parser.add_argument("--add_special_tokens", action='store_true', help='Set this flag to true', default=False)
     parser.add_argument('--sample', action='store_true', help='Set the flag to true if sampling based data creation is required', default=None)
     parser.add_argument('--sampling_ratio', type=float, default=0.9, help='Sampling amount for below threshold values')
     parser.add_argument('--threshold_col', type=str, default=None, help='Column that needs to be used for thresholding')
@@ -94,7 +94,7 @@ def main():
         train_data_path=args.train_data_path,
         output_dir=args.output_dir,
         torch_dtype=args.torch_dtype,
-        add_special_tokens=args.add_special_tokens,
+        # add_special_tokens=args.add_special_tokens,
         sample=args.sample,
         sampling_ratio=args.sampling_ratio,
         threshold_col=args.threshold_col,

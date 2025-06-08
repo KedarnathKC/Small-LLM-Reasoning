@@ -16,22 +16,29 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 hf_token=os.getenv('hf_token')
 
 def calculate_token_level_logprobs_ratio(teacher_logprobs, student_logprobs):
-    token_level_logprobs=[]
-    for i in range(len(student_logprobs)):
-        teacher_logprobs= np.array(teacher_logprobs)
-        student_logprobs= np.array(student_logprobs)       
-        token_level_logprobs.append(np.subtract(teacher_logprobs,student_logprobs))
-    return token_level_logprobs
+    teacher_logprobs = np.array(teacher_logprobs)
+    student_logprobs = np.array(student_logprobs)
+    return np.subtract(teacher_logprobs, student_logprobs).tolist()
+    
+    # token_level_logprobs=[]
+    # for i in range(len(student_logprobs)):
+    #     tr_logprobs= np.array(teacher_logprobs[i])
+    #     stu_logprobs= np.array(student_logprobs[i])       
+    #     token_level_logprobs.append(np.subtract(tr_logprobs,stu_logprobs))
+    # return token_level_logprobs
 
 def calculate_sentence_level_logprobs_ratio(teacher_logprobs, student_logprobs):
-    sentence_level_logprobs=[]
-    teacher_sentence_logprobs=[]
-    student_sentence_logprobs=[]
-    for i in range(len(student_logprobs)):
-        teacher_sentence_logprobs.append(np.mean(np.array(teacher_logprobs[i])))
-        student_sentence_logprobs.append(np.mean(np.array(student_logprobs[i])))
-    sentence_level_logprobs=  np.subtract(teacher_sentence_logprobs,student_sentence_logprobs)
-    return sentence_level_logprobs
+    teacher_logprob = np.mean(teacher_logprobs)
+    student_logprob = np.mean(student_logprobs)
+    return np.subtract(teacher_logprob, student_logprob)
+    # sentence_level_logprobs=[]
+    # teacher_sentence_logprobs=[]
+    # student_sentence_logprobs=[]
+    # for i in range(len(student_logprobs)):
+    #     teacher_sentence_logprobs.append(np.mean(np.array(teacher_logprobs[i])))
+    #     student_sentence_logprobs.append(np.mean(np.array(student_logprobs[i])))
+    # sentence_level_logprobs=  np.subtract(np.array(teacher_sentence_logprobs),np.array(student_sentence_logprobs))
+    # return sentence_level_logprobs
 
 def get_logprobs(model_path, tokenized_prompt_path, student_generation_path, teacher_generation_path, student_logprobs_path, batch_size, output_path, torch_dtype='bfloat16'):
     '''
@@ -46,6 +53,7 @@ def get_logprobs(model_path, tokenized_prompt_path, student_generation_path, tea
     data_student = load_dataset('json', data_files=student_generation_path)['train']
     data_tokenized = load_from_disk(tokenized_prompt_path)
     data_teacher = load_dataset('json', data_files=teacher_generation_path)['train']    
+    student_logprobs = load_dataset('json', data_files=student_logprobs_path)['train'] 
 
     tokenizer = AutoTokenizer.from_pretrained(
         model_path,
@@ -61,12 +69,10 @@ def get_logprobs(model_path, tokenized_prompt_path, student_generation_path, tea
         cache_dir=cache_dir
     )
     model.eval()
-    
-    # Open and read the JSON file
-    with open(student_logprobs_path, 'r') as file:
-        student_logprobs = json.load(file)
 
     all_outputs = []
+    # teacher_log_probs_of_student=[]
+    # student_log_probs_of_student=[]
     for i in tqdm(range(0,data_student.num_rows,batch_size)):
         examples=[]
         questions=[]
@@ -77,7 +83,7 @@ def get_logprobs(model_path, tokenized_prompt_path, student_generation_path, tea
             # We are using token_ids since all models are from the same family, they will have similar tokenizer's. If that is not the case then you need to 
             # concatinate the models prompt and output using untokenized text.   
             question = torch.tensor(data_tokenized['input_ids'][j]['prompt_token_ids'], dtype=torch.long).unsqueeze(0)
-            answer = torch.tensor(data_student['token_ids'][j][0], dtype=torch.long).unsqueeze(0)
+            answer = torch.tensor(data_student['model_token_ids'][j][0], dtype=torch.long).unsqueeze(0)
             examples.append(torch.cat((question, answer), dim=1).squeeze(dim=0))
             questions.append(question)
             answers.append(answer)
@@ -104,27 +110,30 @@ def get_logprobs(model_path, tokenized_prompt_path, student_generation_path, tea
             teacher_logprobs=[]
             for token, prob in zip(examples[j][answer_start_idx:answer_end_idx], gen_probs[j][answer_start_idx:answer_end_idx]):
                 teacher_logprobs.append(prob.item())
-            
             all_outputs.append(
                 {
                     'prompt':student_logprobs['prompt'][i+j],
                     'prompt_input_ids':student_logprobs['prompt_input_ids'][i+j],
-                    'gt_reference':student_logprobs[answer_col][i+j],
+                    'gt_reference':student_logprobs['gt_reference'][i+j],
                     # evaluation
                     'gt_answer':student_logprobs['gt_answer'][i+j],
-                    'student_answer':student_logprobs['model_answer'][i+j],
-                    'student_score':student_logprobs['score'][i+j]
+                    'student_answer':student_logprobs['student_answer'][i+j],
+                    'student_score':student_logprobs['student_score'][i+j],
                     'teacher_answer':data_teacher['model_answer'][i+j],
                     'teacher_score':data_teacher['score'][i+j],
                     # assessment
                     'teacher_output':data_teacher['model_output'][i+j][0],
-                    'student_output':student_logprobs['model_output'][i+j][0], 
+                    'student_output':student_logprobs['student_output'][i+j], 
                     'chosen_input_ids':data_teacher['model_token_ids'][i+j][0],
-                    'rejected_input_ids':student_logprobs['model_token_ids'][i+j][0],
+                    'rejected_input_ids':student_logprobs['rejected_input_ids'][i+j],
                     'student_log_probs_of_student':student_logprobs['student_log_probs_of_student'][i+j],
                     'teacher_log_probs_of_student':teacher_logprobs,
+                    'teacher_student_token_log_prob_ratio':calculate_token_level_logprobs_ratio(teacher_logprobs, student_logprobs['student_log_probs_of_student'][i+j]),
+                    'teacher_student_sent_log_prob_ratio':calculate_sentence_level_logprobs_ratio(teacher_logprobs, student_logprobs['student_log_probs_of_student'][i+j])
                 }
             )
+            # teacher_log_probs_of_student.append(teacher_logprobs)
+            # student_log_probs_of_student.append(student_logprobs['student_log_probs_of_student'][i+j])
 
         # Move tensors to CPU and delete them
         examples = examples.cpu()
@@ -138,10 +147,10 @@ def get_logprobs(model_path, tokenized_prompt_path, student_generation_path, tea
         torch.cuda.empty_cache()  # Free unused GPU memory
 
     # Calculate the token and sentence level logprobs ratio
-    token_level_logprobs= calculate_token_level_logprobs(all_outputs['teacher_log_probs_of_student'], all_outputs['student_log_probs_of_student'])
-    sentence_level_logprobs= calculate_sentence_level_logprobs(all_outputs['teacher_log_probs_of_student'], all_outputs['student_log_probs_of_student'])
-    all_outputs['teacher_student_token_log_prob_ratio']=token_level_logprobs  
-    all_outputs['teacher_student_sent_log_prob_ratio']=sentence_level_logprobs
+    # token_level_logprobs= calculate_token_level_logprobs_ratio(teacher_log_probs_of_student, student_log_probs_of_student)
+    # sentence_level_logprobs= calculate_sentence_level_logprobs_ratio(teacher_log_probs_of_student, student_log_probs_of_student)
+    # all_outputs['teacher_student_token_log_prob_ratio']=token_level_logprobs  
+    # all_outputs['teacher_student_sent_log_prob_ratio']=sentence_level_logprobs
 
     output_dir = os.path.dirname(output_path)
     if output_dir:  # Check if there is a directory part in the path
