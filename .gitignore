@@ -12,3 +12,6 @@
 \scratch
 \outputs
 \notebooks\graphs
+sync.sh
+.vscode/
+*__pycache__*
