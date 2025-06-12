@@ -8,6 +8,7 @@ import json
 import torch
 from transformers import AutoTokenizer
 from datasets import load_from_disk
+import argparse
 
 def get_prompt(ex, prompt_template, task_prompt, few_shot, few_shot_examples, input_col, output_col, n=3):
     prompt=[

@@ -10,7 +10,7 @@ import torch
 import argparse
 from datasets import load_from_disk
 from transformers import AutoTokenizer
-from small_llm_reasoning.evaluation import gsm8k, gec, neutralization
+from small_llm_reasoning.evaluation import gsm8k, gec, neutralization, math
 from small_llm_reasoning.generation.vllm_generation import llama_forward
 
 hf_token = os.getenv("hf_token")
@@ -82,6 +82,8 @@ def generate(model_path, eval_data_path, m2_file_path, evaluation_func, input_co
         score = gec.get_score(eval_data_path,output_path, m2_file_path, reference_col)  
     elif evaluation_func == 'neutralization':
         score = neutralization.get_score(eval_data_path,output_path, input_col, reference_col)  
+    elif evaluation_func == 'math':
+        score = math.get_score(eval_data_path, output_path)
 
     print(f"SCORE of {model_path} : ",score)
     print(f"Output saved in: {output_path}")
