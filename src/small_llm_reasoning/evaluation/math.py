@@ -272,7 +272,7 @@ def get_rationale(model_response):
 def get_gt_answer(vllm_prompt_input_ids, eval_dataset):
     for i in range(len(eval_dataset)):
         if eval_dataset[i]['input_ids']['prompt_token_ids'] == vllm_prompt_input_ids:
-            return eval_dataset[i]['answer']
+            return eval_dataset[i]['rationale']
     raise ValueError(f"Prompt input ids not found in eval dataset")
 
 def get_score(eval_data_path, model_output_path):

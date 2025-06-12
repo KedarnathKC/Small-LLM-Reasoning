@@ -21,7 +21,7 @@ def get_problem_hash(problem: str) -> str:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def load_math_data(split: str, data_dir: str = "datasets/math/raw_data") -> list:
+def load_math_data(split: str, data_dir: str = "datasets/math/raw") -> list:
     """
     Load math data from individual JSON files in the specified split directory.
     
@@ -51,8 +51,8 @@ def load_math_data(split: str, data_dir: str = "datasets/math/raw_data") -> list
             # Extract only the required fields
             example = {
                 "question": data["problem"],
-                "answer": data["solution"],
-                "rationale": "",
+                "answer": "",
+                "rationale": data["solution"],
                 "type": data["type"],
                 "level": data["level"],
                 "category": folder,
@@ -140,7 +140,7 @@ def create_math_dataset(validation_sample_size=100, strategy="random"):
 
     
     # Save the dataset
-    output_dir = f"datasets/math/raw_data/train_val_test_splits_dataset_{strategy}"
+    output_dir = f"datasets/math/raw/train_val_test_splits_dataset_{strategy}"
     os.makedirs(output_dir, exist_ok=True)
     dataset_dict.save_to_disk(output_dir)
     logger.info(f"Saved dataset to {output_dir}")
@@ -167,7 +167,8 @@ def create_feedback_dataset(feedback_sample_size=100, strategy="random"):
         tuple: (feedback_dataset, remaining_train_dataset) where each is a list of examples
     """
     # Load all data
-    main_data = load_from_disk(f"datasets/math/raw_data/train_val_test_splits_dataset_{strategy}")
+    data_path = f"datasets/math/raw/train_val_test_splits_dataset_{strategy}"
+    main_data = load_from_disk(data_path)
     
     # Filter for training data
     train_data = main_data["train"]
@@ -204,7 +205,7 @@ def create_feedback_dataset(feedback_sample_size=100, strategy="random"):
             logger.info(f"Category: {category}, Number of examples: {len([x for x in dataset_dict[split] if x['category'] == category])}")
 
     # Save the dataset
-    output_dir = f"datasets/math/raw_data/train_val_test_splits_dataset_feedback_{feedback_sample_size}"
+    output_dir = f"datasets/math/raw/train_val_test_splits_dataset_feedback_{feedback_sample_size}"
     os.makedirs(output_dir, exist_ok=True)
     dataset_dict.save_to_disk(output_dir)
     logger.info(f"Saved dataset to {output_dir}")
