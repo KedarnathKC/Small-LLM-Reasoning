@@ -251,7 +251,7 @@ def evaluate_response(ground_truth: str, model_response: str) -> Dict[str, int]:
         last_boxed_string = last_boxed_only_string(model_response)
         if not last_boxed_string:
             print("No boxed string found in model response. Marking as incorrect.")
-            return {"exact_match": 0}
+            return {"score": 0, "model_answer": model_response, "gt_answer": gt_answer}
         
         model_answer = normalize_final_answer(remove_boxed(last_boxed_string))
         
@@ -261,30 +261,35 @@ def evaluate_response(ground_truth: str, model_response: str) -> Dict[str, int]:
         else:
             result = 0
         
-        return {"exact_match": result, "model_answer": model_answer, "gt_answer": gt_answer}
+        return {"score": result, "model_answer": model_answer, "gt_answer": gt_answer}
     except Exception as e:
         print(f"Error: {e}")
-        return {"exact_match": 0, "model_answer": model_response, "gt_answer": gt_answer}
+        return {"score": 0, "model_answer": model_response, "gt_answer": gt_answer}
     
 def get_rationale(model_response): 
     return model_response.split("The final answer is:")[0].strip()
 
-def get_score(model_output_path):
+def get_gt_answer(vllm_prompt_input_ids, eval_dataset):
+    for i in range(len(eval_dataset)):
+        if eval_dataset[i]['input_ids']['prompt_token_ids'] == vllm_prompt_input_ids:
+            return eval_dataset[i]['answer']
+    raise ValueError(f"Prompt input ids not found in eval dataset")
+
+def get_score(eval_data_path, model_output_path):
+    eval_dataset = load_from_disk(eval_data_path)
     df = pd.read_json(model_output_path)
     results = []
     for _, row in df.iterrows():
         t= {}
         row_x = row.to_dict()
         t.update(row_x)
-        t['model_rationale'] = get_rationale(row['model_output'])
-        result = evaluate_response(row['answer'], t['model_output'[0]])
+        t['model_rationale'] = get_rationale(row_x['model_output'][0])
+        t['answer'] = get_gt_answer(row_x['prompt_input_ids'], eval_dataset)
+        result = evaluate_response(t['answer'], row_x['model_output'][0])
         t.update(result)
         results.append(t)
     
     df = pd.DataFrame(results)
-    df['exact_match'] = [result['exact_match'] for result in results]
-    df['model_answer'] = [result['model_answer'] for result in results]
-    df['gt_answer'] = [result['gt_answer'] for result in results]
     
     # get directory of model_output_path
     dir_path = os.path.dirname(model_output_path)
@@ -296,6 +301,9 @@ def get_score(model_output_path):
 
     # save df to json
     df.to_json(os.path.join(dir_path, f"{file_name_without_extension}_eval.json"), orient='records', indent=4)
+
+    score = df['score'].sum()/df.shape[0]
+    return score
     
 
     
