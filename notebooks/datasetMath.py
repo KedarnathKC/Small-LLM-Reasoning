@@ -21,7 +21,7 @@ def get_problem_hash(problem: str) -> str:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def load_math_data(split: str, data_dir: str = "datasets/math/raw") -> list:
+def load_math_data(split: str, data_dir: str = "datasets/math/org") -> list:
     """
     Load math data from individual JSON files in the specified split directory.
     
@@ -135,12 +135,13 @@ def create_math_dataset(validation_sample_size=100, strategy="random"):
     dataset_dict = DatasetDict({
         "train": train_dataset,
         "test": test_dataset,
-        "validation": validation_dataset
+        "val": validation_dataset
     })
 
     
     # Save the dataset
-    output_dir = f"datasets/math/raw/train_val_test_splits_dataset_{strategy}"
+    # output_dir = f"datasets/math/raw/train_val_test_splits_dataset_{strategy}"
+    output_dir = f"datasets/math/raw/"
     os.makedirs(output_dir, exist_ok=True)
     dataset_dict.save_to_disk(output_dir)
     logger.info(f"Saved dataset to {output_dir}")
@@ -167,11 +168,8 @@ def create_feedback_dataset(feedback_sample_size=100, strategy="random"):
         tuple: (feedback_dataset, remaining_train_dataset) where each is a list of examples
     """
     # Load all data
-    data_path = f"datasets/math/raw/train_val_test_splits_dataset_{strategy}"
-    main_data = load_from_disk(data_path)
-    
-    # Filter for training data
-    train_data = main_data["train"]
+    data_path = f"datasets/math/raw/train"
+    train_data = load_from_disk(data_path)
     
     if strategy == "random":
         feedback_dataset = sample_examples_from_datataset(train_data, feedback_sample_size)
@@ -188,32 +186,19 @@ def create_feedback_dataset(feedback_sample_size=100, strategy="random"):
         x for x in train_data 
         if get_problem_hash(x["question"]) not in feedback_problems
     ]
-    
-    # Now create a dataset dict with train, test, validation and feedback splits
-    dataset_dict = DatasetDict({
-        "train": Dataset.from_list(remaining_train_data),
-        "test": Dataset.from_list(main_data["test"]),
-        "validation": Dataset.from_list(main_data["validation"]),
-        "feedback": Dataset.from_list(feedback_dataset)
-    })
 
-    # Print how many examples are in each split and how many in each category in each split
-    for split in dataset_dict:
-        logger.info(f"Split: {split}")
-        logger.info(f"Number of examples: {len(dataset_dict[split])}")
-        for category in set(dataset_dict[split]["category"]):
-            logger.info(f"Category: {category}, Number of examples: {len([x for x in dataset_dict[split] if x['category'] == category])}")
+    feedback_data = Dataset.from_list(feedback_dataset)
 
     # Save the dataset
-    output_dir = f"datasets/math/raw/train_val_test_splits_dataset_feedback_{feedback_sample_size}"
+    output_dir = f"datasets/math/raw/feedback-{feedback_sample_size}"
     os.makedirs(output_dir, exist_ok=True)
-    dataset_dict.save_to_disk(output_dir)
+    feedback_data.save_to_disk(output_dir)
     logger.info(f"Saved dataset to {output_dir}")
 
 if __name__ == "__main__":
     create_math_dataset()
     create_feedback_dataset(100)
     create_feedback_dataset(400)
-    create_feedback_dataset(1600)
-    create_feedback_dataset(6400)
+    # create_feedback_dataset(1600)
+    # create_feedback_dataset(6400)
     

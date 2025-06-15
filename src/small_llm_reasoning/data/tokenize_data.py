@@ -46,7 +46,7 @@ def tokenize_function(tokenizer, example,input_col, output_col, prompt_template,
     return {'input_ids': {'prompt_token_ids':tokenizer(prompt, add_special_tokens=False)['input_ids']}}
 
 def tokenize_data(tokenizer, hf_name, task_name, split, input_col, output_col, prompt_template, task_prompt, few_shot, few_shot_examples, n):
-    data_path= f'../datasets/{task_name}'
+    data_path= f'./datasets/{task_name}'
     data = load_from_disk(f"{data_path}/raw/{split}/")
     # If we pass in batches tokenier adds padding tokens.
     tokenized_dataset = data.map(lambda ex: tokenize_function(tokenizer, ex, input_col, output_col, prompt_template, task_prompt, few_shot, few_shot_examples, n), batched=False)
@@ -77,7 +77,8 @@ def main():
     tokenizer.pad_token_id = tokenizer.eos_token_id
 
     for task in args.task:
-        task_prompt_path=f'../prompts/{task}.json'
+        task_prompt_path=f'./prompts/{task}.json'
+        
         with open(task_prompt_path) as fp:
             task_prompt = json.load(fp)
         prompt_template={
