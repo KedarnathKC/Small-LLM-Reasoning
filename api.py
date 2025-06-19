@@ -1,8 +1,9 @@
 import openai
 import os
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 import logging
 import requests
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -24,6 +25,7 @@ class API:
             self.api_key = api_key or os.getenv("OPENAI_API_KEY")
             if not self.api_key:
                 raise ValueError("No OpenAI API key provided. Set OPENAI_API_KEY environment variable or pass api_key parameter.")
+            self.base_url = None
             
         elif self.provider == "together":
             self.api_key = api_key or os.getenv("TOGETHER_API_KEY")
@@ -42,8 +44,9 @@ class API:
             self.base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
             self.api_key = "ollama"
 
-        self.client = openai.OpenAI(base_url=self.base_url + "/v1" if self.base_url else None , api_key=self.api_key)
+        self.client = openai.OpenAI(base_url=self.base_url + "/v1" if self.base_url else None, api_key=self.api_key)
             
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def get_completion(
         self,
         prompt: str,
@@ -103,7 +106,6 @@ class API:
                 return [model.id for model in models.data]
             
             elif self.provider == "together":
-
                 headers = {
                     "accept": "application/json",
                     "authorization": f"Bearer {self.api_key}"
@@ -126,21 +128,3 @@ class API:
         except Exception as e:
             logger.error(f"Error listing models for {self.provider}: {str(e)}")
             raise
-
-# Example usage
-if __name__ == "__main__":
-    api = API(provider="ollama")
-    
-    # List available models
-    print("Available models:")
-    print(api.list_models())
-    
-    # Get completion
-    response = api.get_completion(
-        prompt="Hello, world!",
-        model="llama3.2:3b",  # Use one of the models from the list
-        max_tokens=100,
-        temperature=0.7
-    )
-    print("\nCompletion response:")
-    print(response)
