@@ -633,9 +633,9 @@ def load_variables_from_file(filepath: str) -> List[Dict[str, str]]:
 # Example usage
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate synthetic data with checkpointing and error handling")
-    parser.add_argument("--provider", type=str, required=True, help="API provider (openai, together, ollama, llama)")
-    parser.add_argument("--model", type=str, required=True, help="Model to use")
-    parser.add_argument("--prompt-file", type=str, required=True, help="Path to prompt template file (.txt, .md, .prompt, etc.)")
+    parser.add_argument("--provider", type=str, choices=["openai", "together", "ollama", "llama"], required=True, help="API provider (openai, together, ollama, llama)")
+    parser.add_argument("--model", type=str, help="Model to use")
+    parser.add_argument("--prompt-file", type=str, help="Path to prompt template file (.txt, .md, .prompt, etc.)")
     parser.add_argument("--output-dir", type=str, default="./output", help="Directory to save output files")
     parser.add_argument("--n-samples", type=int, default=1, help="Number of samples to generate per variable set")
     parser.add_argument("--max-tokens", type=int, default=300, help="Maximum tokens to generate")

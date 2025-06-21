@@ -7,7 +7,8 @@ scratch
 !*_outputs/.gitkeep
 analysis/graphs
 bigcodebench-evaluator
-
+sync.sh
+outputs/*
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
