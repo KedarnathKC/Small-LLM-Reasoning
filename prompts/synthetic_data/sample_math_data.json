@@ -1,0 +1,17 @@
+[
+    {
+      "question": "Find all real numbers x such that x^2 + 5x + 6 = 0"
+    },
+    {
+      "question": "Solve the system of equations: 2x + 3y = 7 and x - y = 1"
+    },
+    {
+      "question": "Find the derivative of f(x) = x^3 * sin(x)"
+    },
+    {
+      "question": "Calculate the integral of 1/(1+x^2) from 0 to 1"
+    },
+    {
+      "question": "Prove that the sum of angles in a triangle equals 180 degrees"
+    }
+]

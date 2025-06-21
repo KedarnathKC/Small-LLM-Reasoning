@@ -13,5 +13,8 @@
 \outputs
 \notebooks\graphs
 sync.sh
+.DS_Store
+.vscode/
+sync.sh
 .vscode/
 *__pycache__*
