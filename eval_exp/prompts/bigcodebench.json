@@ -1,0 +1,7 @@
+{
+    "task_prompt":"Please provide a self-contained Python script that solves the following problem in a markdown code block:",
+    "system_msg": "",
+    "user_msg": "{instruction}\n```\n{question}\n```", 
+    "assistant_msg": "{response}\n\n{rationale}",
+    "few_shot":[]
+}
