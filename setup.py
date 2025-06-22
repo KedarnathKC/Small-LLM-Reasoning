@@ -11,6 +11,7 @@ setup(
         "pandas",
         "numpy",
         "matplotlib",
+        "tenacity",
         "openai",
         "torch==2.4.0",
         "transformers",
