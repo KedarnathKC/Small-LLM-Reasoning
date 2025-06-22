@@ -77,7 +77,7 @@ def main():
     tokenizer.pad_token_id = tokenizer.eos_token_id
 
     for task in args.task:
-        task_prompt_path=f'./prompts/{task}.json'
+        task_prompt_path=f'eval_exp/prompts/{task}.json'
         
         with open(task_prompt_path) as fp:
             task_prompt = json.load(fp)

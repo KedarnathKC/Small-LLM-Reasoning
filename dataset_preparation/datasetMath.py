@@ -92,9 +92,9 @@ def sample_examples_from_datataset(dataset, sample_size=100):
         # Fallback: assume it's already a list
         data_list = dataset
     
-    return random.sample(data_list, sample_size)
-
-    
+    # Randomize the entire dataset and take the first sample_size data points
+    random.shuffle(data_list)
+    return data_list[:sample_size]
 
 def create_math_dataset(validation_sample_size=100, strategy="random"):
     """
@@ -131,19 +131,13 @@ def create_math_dataset(validation_sample_size=100, strategy="random"):
 
     test_dataset = Dataset.from_list(test_data)
     logger.info(f"Test dataset: {len(test_dataset)} examples")
-    # Create dataset dictionary
-    dataset_dict = DatasetDict({
-        "train": train_dataset,
-        "test": test_dataset,
-        "val": validation_dataset
-    })
 
-    
-    # Save the dataset
-    # output_dir = f"datasets/math/raw/train_val_test_splits_dataset_{strategy}"
+    #Save the dataset
     output_dir = f"datasets/math/raw/"
     os.makedirs(output_dir, exist_ok=True)
-    dataset_dict.save_to_disk(output_dir)
+    train_dataset.save_to_disk(output_dir+'train')
+    validation_dataset.save_to_disk(output_dir+'val')
+    test_dataset.save_to_disk(output_dir+'test')
     logger.info(f"Saved dataset to {output_dir}")
     
     # Print some statistics
@@ -199,6 +193,6 @@ if __name__ == "__main__":
     create_math_dataset()
     create_feedback_dataset(100)
     create_feedback_dataset(400)
-    # create_feedback_dataset(1600)
-    # create_feedback_dataset(6400)
+    create_feedback_dataset(1600)
+    create_feedback_dataset(6400)
     
