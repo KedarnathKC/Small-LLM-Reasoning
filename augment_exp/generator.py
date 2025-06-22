@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from jinja2 import Template, meta
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 from api import API
 import logging
 import hashlib
@@ -12,6 +12,13 @@ import time
 import signal
 import sys
 import os
+# Add Hugging Face datasets import
+try:
+    from datasets import load_from_disk, load_dataset
+    HF_DATASETS_AVAILABLE = True
+except ImportError:
+    HF_DATASETS_AVAILABLE = False
+    logging.warning("Hugging Face datasets not available. Install with: pip install datasets")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -167,7 +174,7 @@ class CheckpointManager:
             with open(self.errors_file, 'w') as f:
                 json.dump(failed_samples, f, indent=2)
             
-            logger.info(f"Checkpoint saved: {len(total_samples)} samples, {len(failed_samples)} errors")
+            logger.info(f"Checkpoint saved: {len(total_samples)} samples, {len(failed_samples)} errors at {self.checkpoint_file}")
             
         except Exception as e:
             logger.error(f"Failed to save checkpoint: {str(e)}")
@@ -599,38 +606,204 @@ class SyntheticDataGenerator:
         }
 
 
+def detect_data_source_type(filepath: str) -> str:
+    """
+    Detect the type of data source.
+    
+    Returns:
+        str: One of 'json_file', 'hf_disk', 'hf_hub'
+    """
+    path = Path(filepath)
+    
+    # Check if it's an existing file or directory
+    if path.exists():
+        if path.is_file() and path.suffix == '.json':
+            return 'json_file'
+        elif path.is_dir():
+            # Check if it's a saved HF dataset (has dataset_info.json or dataset_dict.json)
+            if (path / 'dataset_info.json').exists() or (path / 'dataset_dict.json').exists():
+                return 'hf_disk'
+            else:
+                raise ValueError(f"Directory {filepath} exists but doesn't appear to be a saved HF dataset")
+    
+    # Not a local path - check if it's a HF Hub dataset pattern
+    hf_patterns = [
+        r'^[a-zA-Z0-9_-]+$',  # Simple dataset name
+        r'^[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+$',  # user/dataset format
+        r'^[a-zA-Z0-9_-]+(/[a-zA-Z0-9_.-]+)?::.+$',  # Contains :: separator
+    ]
+    
+    for pattern in hf_patterns:
+        if re.match(pattern, filepath):
+            return 'hf_hub'
+    
+    # If nothing matches, raise error
+    raise ValueError(f"Could not determine data source type for: {filepath}")
+
+
+def parse_hf_config_string(config_string: str) -> Dict[str, Union[str, List[str], int, bool, None]]:
+    """
+    Parse HuggingFace dataset configuration string.
+    
+    Format: [dataset_path]::[config_name]::[split]::[columns]::[max_samples]::[streaming]
+    """
+    parts = config_string.split("::")
+    
+    config = {
+        "dataset": parts[0],
+        "config_name": parts[1] if len(parts) > 1 and parts[1] else None,
+        "split": parts[2] if len(parts) > 2 and parts[2] else "train",
+        "columns": [col.strip() for col in parts[3].split(",")] if len(parts) > 3 and parts[3] else None,
+        "max_samples": int(parts[4]) if len(parts) > 4 and parts[4] else None,
+        "streaming": parts[5].lower() in ['true', '1', 'yes', 'on'] if len(parts) > 5 else False
+    }
+    
+    return config
+
+
+def load_hf_dataset_unified(
+    source: str,
+    source_type: str,
+    config: Dict[str, Union[str, List[str], int, bool, None]]
+) -> List[Dict[str, str]]:
+    """
+    Unified loader for HuggingFace datasets from disk or hub.
+    """
+    if not HF_DATASETS_AVAILABLE:
+        raise ImportError("Hugging Face datasets library is not installed. Install with: pip install datasets")
+    
+    try:
+        # Load dataset based on source type
+        if source_type == 'hf_disk':
+            logger.info(f"Loading HuggingFace dataset from disk: {source}")
+            dataset = load_from_disk(source)
+            
+            # Handle dataset dict (multiple splits)
+            if hasattr(dataset, '__getitem__') and config['split'] in dataset:
+                dataset = dataset[config['split']]
+            elif hasattr(dataset, 'keys') and callable(dataset.keys):
+                available_splits = list(dataset.keys())
+                if config['split'] not in available_splits:
+                    logger.warning(f"Split '{config['split']}' not found. Available: {available_splits}. Using first split.")
+                    dataset = dataset[available_splits[0]]
+                else:
+                    dataset = dataset[config['split']]
+        else:  # hf_hub
+            logger.info(f"Loading HuggingFace dataset from hub: {config['dataset']}")
+            dataset = load_dataset(
+                config['dataset'],
+                config['config_name'],
+                split=config['split'],
+                streaming=config['streaming']
+            )
+        
+        # Get available columns
+        if hasattr(dataset, 'column_names'):
+            available_columns = dataset.column_names
+        elif hasattr(dataset, 'features'):
+            available_columns = list(dataset.features.keys())
+        else:
+            available_columns = None
+        
+        if available_columns:
+            logger.info(f"Available columns: {available_columns}")
+        
+        # Validate requested columns
+        if config['columns'] and available_columns:
+            invalid_columns = [col for col in config['columns'] if col not in available_columns]
+            if invalid_columns:
+                raise ValueError(f"Columns {invalid_columns} not found. Available: {available_columns}")
+        
+        # Convert to list of dictionaries
+        variables_list = []
+        
+        # Handle regular datasets
+        dataset_size = len(dataset)
+        logger.info(f"Dataset size: {dataset_size}")
+        
+        if config['max_samples'] and config['max_samples'] < dataset_size:
+            logger.info(f"Limiting to {config['max_samples']} samples")
+            dataset = dataset.select(range(config['max_samples']))
+        
+        if config['columns']:
+            dataset = dataset.select_columns(config['columns'])
+        
+        for sample in dataset:
+            variables_list.append({k: str(v) for k, v in sample.items()})
+        
+        logger.info(f"Successfully loaded {len(variables_list)} samples")
+        
+        if variables_list:
+            logger.info(f"Sample variables: {list(variables_list[0].keys())}")
+            logger.info(f"First sample preview: {str(variables_list[0])[:200]}...")
+        
+        return variables_list
+        
+    except Exception as e:
+        raise Exception(f"Error loading dataset: {str(e)}")
+
+
 def load_variables_from_file(filepath: str) -> List[Dict[str, str]]:
     """
-    Load variables from a JSON file with error handling.
+    Load variables from a JSON file, HuggingFace dataset from disk, or HuggingFace Hub.
     
-    Args:
-        filepath: Path to JSON file containing variables
-        
+    Supported formats:
+    - JSON file: "data.json", "/path/to/data.json"
+    - HF dataset from disk: "/path/to/saved_dataset", "./my_dataset"
+    - HF Hub dataset: "squad", "user/dataset", "squad::train::question,context::1000"
+    
     Returns:
-        List of variable dictionaries
+        List of variable dictionaries with string values
     """
     try:
-        with open(filepath, 'r') as f:
-            data = json.load(f)
+        # Detect source type
+        source_type = detect_data_source_type(filepath)
+        logger.info(f"Detected source type: {source_type}")
         
-        # Handle different JSON formats
-        if isinstance(data, list):
-            return data
-        elif isinstance(data, dict):
-            # If it's a single dict, wrap it in a list
-            return [data]
-        else:
-            raise ValueError(f"Invalid JSON format in {filepath}. Expected list or dict.")
+        if source_type == 'json_file':
+            # Load JSON file
+            logger.info(f"Loading JSON file: {filepath}")
+            with open(filepath, 'r', encoding='utf-8') as f:
+                data = json.load(f)
             
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Variables file not found: {filepath}")
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON in {filepath}: {str(e)}")
+            if isinstance(data, list):
+                return [{k: str(v) for k, v in item.items()} for item in data if isinstance(item, dict)]
+            elif isinstance(data, dict):
+                return [{k: str(v) for k, v in data.items()}]
+            else:
+                raise ValueError(f"Invalid JSON format. Expected list or dict, got: {type(data)}")
+        
+        elif source_type in ['hf_disk', 'hf_hub']:
+            # Parse configuration if present
+            if '::' in filepath:
+                config = parse_hf_config_string(filepath)
+                source = config['dataset']
+            else:
+                config = {
+                    "dataset": filepath,
+                    "config_name": None,
+                    "split": "train",
+                    "columns": None,
+                    "max_samples": None,
+                    "streaming": False
+                }
+                source = filepath
+            
+            return load_hf_dataset_unified(source, source_type, config)
+        
     except Exception as e:
-        raise Exception(f"Error loading variables from {filepath}: {str(e)}")
+        # Provide helpful error messages
+        error_msg = f"Failed to load data from '{filepath}': {str(e)}"
+        
+        if 'ImportError' in str(type(e)):
+            error_msg += "\n\nHint: Install Hugging Face datasets with: pip install datasets"
+        elif source_type == 'hf_hub':
+            dataset_name = filepath.split('::')[0] if '::' in filepath else filepath
+            error_msg += f"\n\nHint: Check if dataset exists at https://huggingface.co/datasets/{dataset_name}"
+        
+        raise Exception(error_msg)
 
-
-# Example usage
+# The main section needs minimal changes - just update the help text:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate synthetic data with checkpointing and error handling")
     parser.add_argument("--provider", type=str, choices=["openai", "together", "ollama", "llama"], required=True, help="API provider (openai, together, ollama, llama)")
@@ -638,9 +811,11 @@ if __name__ == "__main__":
     parser.add_argument("--prompt-file", type=str, help="Path to prompt template file (.txt, .md, .prompt, etc.)")
     parser.add_argument("--output-dir", type=str, default="./output", help="Directory to save output files")
     parser.add_argument("--n-samples", type=int, default=1, help="Number of samples to generate per variable set")
-    parser.add_argument("--max-tokens", type=int, default=300, help="Maximum tokens to generate")
+    parser.add_argument("--max-tokens", type=int, default=1000, help="Maximum tokens to generate")
     parser.add_argument("--temperature", type=float, default=0.7, help="Temperature for generation")
+    parser.add_argument("--top-p", type=float, default=0.95, help="Top-p for nucleus sampling")
     parser.add_argument("--list-models", action="store_true", help="List available models and exit")
+    parser.add_argument("--demo", action="store_true", help="Run in demo mode")
     
     # Error handling and checkpointing options
     parser.add_argument("--checkpoint-interval", type=int, default=5, 
@@ -654,9 +829,14 @@ if __name__ == "__main__":
     parser.add_argument("--resume", action="store_true",
                        help="Resume from existing checkpoint if available")
     
-    # Variable input options
+    # Variable input options - UPDATED HELP TEXT
     parser.add_argument("--vars", nargs='*', help="Template variables in key=value format")
-    parser.add_argument("--vars-file", type=str, help="JSON file containing variables (can contain multiple sets)")
+    parser.add_argument("--vars-file", type=str, 
+                   help="Data source - supports: "
+                        "1) JSON file: 'data.json', "
+                        "2) HF dataset from disk: './saved_dataset/', "
+                        "3) HF Hub dataset: 'squad', 'user/dataset', "
+                        "4) With options: 'squad::train::question,context::1000'")
     
     args = parser.parse_args()
     
@@ -666,12 +846,12 @@ if __name__ == "__main__":
         
         # List models if requested
         if args.list_models:
-            print("Available models:")
+            logger.info("Available models:")
             models = api.list_models()
             for model in models[:20]:  # Show first 20 models
-                print(f"  - {model}")
+                logger.info(f"  - {model}")
             if len(models) > 20:
-                print(f"  ... and {len(models) - 20} more")
+                logger.info(f"  ... and {len(models) - 20} more")
             sys.exit(0)
         
         # Load the prompt generator
@@ -683,13 +863,18 @@ if __name__ == "__main__":
         logger.info(f"Template preview:\n{prompt_gen.get_template_preview()}")
         logger.info(f"Required variables: {', '.join(required_vars) if required_vars else 'None detected'}")
         
-        # Prepare variables list
+        # Prepare variables list - SIMPLIFIED SECTION
         variables_list = []
         
-        # Load variables from file if provided
+        # Load variables from file or HF dataset if provided
         if args.vars_file:
-            variables_list = load_variables_from_file(args.vars_file)
-            logger.info(f"Loaded {len(variables_list)} variable sets from {args.vars_file}")
+            try:
+                loaded_vars = load_variables_from_file(args.vars_file)
+                variables_list.extend(loaded_vars)
+                logger.info(f"Loaded {len(loaded_vars)} variable sets from: {args.vars_file}")
+            except Exception as e:
+                logger.error(f"Failed to load variables: {str(e)}")
+                sys.exit(1)
         
         # Add command-line variables if provided
         if args.vars:
@@ -704,27 +889,38 @@ if __name__ == "__main__":
         
         # Validate that we have variables
         if not variables_list:
-            print("Error: No variables provided. Use --vars or --vars-file")
-            print(f"\nRequired variables for this template: {', '.join(required_vars)}")
-            print("\nExample usage:")
-            print(f"  python {parser.prog} --provider {args.provider} --model {args.model} --prompt-file {args.prompt_file} --vars", end="")
+            logger.error("Error: No variables provided. Use --vars or --vars-file")
+            logger.info(f"\nRequired variables for this template: {', '.join(required_vars)}")
+            logger.info("\nExample usage:")
+            logger.info(f"  # JSON file:")
+            logger.info(f"  python {parser.prog} --provider {args.provider} --model MODEL --prompt-file TEMPLATE --vars-file variables.json")
+            logger.info(f"  # Hugging Face dataset:")
+            logger.info(f"  python {parser.prog} --provider {args.provider} --model MODEL --prompt-file TEMPLATE --vars-file squad")
+            logger.info(f"  # HF dataset with options:")
+            logger.info(f"  python {parser.prog} --provider {args.provider} --model MODEL --prompt-file TEMPLATE --vars-file 'squad::train::question,context::1000'")
+            logger.info(f"  # Command line vars:")
+            logger.info(f"  python {parser.prog} --provider {args.provider} --model MODEL --prompt-file TEMPLATE --vars", end="")
             for var in required_vars:
-                print(f" {var}='value'", end="")
-            print()
-            print(f"\nOr with a JSON file:")
-            print(f"  python {parser.prog} --provider {args.provider} --model {args.model} --prompt-file {args.prompt_file} --vars-file variables.json")
+                logger.info(f" {var}='value'", end="")
+            logger.info()
             sys.exit(1)
         
+        if args.demo:
+            logger.info("Running in demo mode, will only process 5 variable sets and 2 samples per set")
+            args.n_samples = 2
+            variables_list = variables_list[:5]
+
         # Validate all variable sets have required variables
         for idx, var_set in enumerate(variables_list):
             missing_vars = [var for var in required_vars if var not in var_set]
             if missing_vars:
-                print(f"Error: Variable set {idx} is missing required variables: {', '.join(missing_vars)}")
-                print(f"Required variables: {', '.join(required_vars)}")
-                print(f"Provided variables: {', '.join(var_set.keys())}")
+                logger.error(f"Error: Variable set {idx} is missing required variables: {', '.join(missing_vars)}")
+                logger.info(f"Required variables: {', '.join(required_vars)}")
+                logger.info(f"Provided variables: {', '.join(var_set.keys())}")
+                logger.info(f"Sample from variable set {idx}: {str(var_set)[:200]}...")
                 sys.exit(1)
         
-        # Initialize generator with enhanced options
+        # Rest of the code remains exactly the same...
         generator = SyntheticDataGenerator(
             api=api,
             prompt_generator=prompt_gen,
@@ -735,7 +931,6 @@ if __name__ == "__main__":
             session_id=args.session_id
         )
         
-        # Generate samples
         logger.info(f"Starting generation: {len(variables_list)} variable sets × {args.n_samples} samples = {len(variables_list) * args.n_samples} total generations")
         logger.info(f"Checkpointing every {args.checkpoint_interval} variable sets")
         logger.info(f"Max retries per request: {args.max_retries}")
@@ -745,33 +940,32 @@ if __name__ == "__main__":
             n_samples=args.n_samples,
             model=args.model,
             max_tokens=args.max_tokens,
-            temperature=args.temperature
+            temperature=args.temperature,
+            top_p=args.top_p,
         )
         
-        # Save results
         generator.save_results(samples, failed_samples)
         
-        # Print summary
         total_attempts = len(samples) + len(failed_samples)
         success_rate = (len(samples) / total_attempts * 100) if total_attempts > 0 else 0
         
-        print(f"\n{'='*50}")
-        print(f"GENERATION COMPLETE")
-        print(f"{'='*50}")
-        print(f"Total attempts: {total_attempts}")
-        print(f"Successful: {len(samples)} ({success_rate:.1f}%)")
-        print(f"Failed: {len(failed_samples)}")
-        print(f"Retries attempted: {generator.stats['retries_attempted']}")
-        print(f"Checkpoints saved: {generator.stats['checkpoints_saved']}")
-        print(f"Output saved to: {generator.output_dir}")
+        logger.info(f"\n{'='*50}")
+        logger.info(f"GENERATION COMPLETE")
+        logger.info(f"{'='*50}")
+        logger.info(f"Total attempts: {total_attempts}")
+        logger.info(f"Successful: {len(samples)} ({success_rate:.1f}%)")
+        logger.info(f"Failed: {len(failed_samples)}")
+        logger.info(f"Retries attempted: {generator.stats['retries_attempted']}")
+        logger.info(f"Checkpoints saved: {generator.stats['checkpoints_saved']}")
+        logger.info(f"Output saved to: {generator.output_dir}")
         
         if failed_samples:
-            print(f"\nError Summary:")
+            logger.info(f"\nError Summary:")
             error_analysis = generator._analyze_errors(failed_samples)
             for category, count in error_analysis.get('error_categories', {}).items():
-                print(f"  {category}: {count}")
+                logger.info(f"  {category}: {count}")
         
-        print(f"{'='*50}")
+        logger.info(f"{'='*50}")
         
     except KeyboardInterrupt:
         logger.info("Generation interrupted by user")
