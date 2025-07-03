@@ -1,5 +1,5 @@
-Small-LLM-Reasoning/datasets/gec/raw/test/test.m2.m2 linguist-detectable=false
-Small-LLM-Reasoning/datasets/gec/raw/val/val.m2.m2 linguist-detectable=false
-Small-LLM-Reasoning/datasets/gec/raw/feedback-100/feedback-100.m2 linguist-detectable=false
-Small-LLM-Reasoning/datasets/gec/raw/feedback-100/feedback-400.m2 linguist-detectable=false
-Small-LLM-Reasoning/datasets/gec/raw/feedback-100/feedback-1600.m2 linguist-detectable=false
+datasets/gec/raw/test/test.m2.m2 linguist-detectable=false
+datasets/gec/raw/val/val.m2.m2 linguist-detectable=false
+datasets/gec/raw/feedback-100/feedback-100.m2 linguist-detectable=false
+datasets/gec/raw/feedback-100/feedback-400.m2 linguist-detectable=false
+datasets/gec/raw/feedback-100/feedback-1600.m2 linguist-detectable=false
