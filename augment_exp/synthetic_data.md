@@ -6,6 +6,7 @@ A robust Python tool for generating synthetic data using AI models with advanced
 
 - **Multi-Provider Support**: OpenAI, Together, Ollama, Llama, and more
 - **Template-Based Generation**: Use Jinja2 templates for flexible prompt engineering
+- **HuggingFace Integration**: Load datasets directly from HuggingFace Hub or disk
 - **Fault Tolerance**: Automatic checkpointing and resume capabilities
 - **Error Handling**: Comprehensive error categorization and retry logic
 - **Graceful Shutdown**: Save progress on interruption (Ctrl+C)
@@ -17,8 +18,16 @@ A robust Python tool for generating synthetic data using AI models with advanced
 ### 1. Install Dependencies
 
 ```bash
+# Core dependencies
 pip install jinja2 argparse pathlib datetime typing
-# Install your preferred AI provider SDK (openai, together, etc.)
+
+# Optional: For HuggingFace datasets support
+pip install datasets
+
+# Install your preferred AI provider SDK
+pip install openai  # For OpenAI
+pip install together  # For Together
+# etc.
 ```
 
 ### 2. Environment Variables Setup
@@ -36,7 +45,6 @@ export TOGETHER_API_KEY="your-together-api-key-here"
 
 # For OpenAI provider (if using)
 export OPENAI_API_KEY="your-openai-api-key-here"
-
 ```
 
 ## 🔧 Basic Usage
@@ -68,6 +76,28 @@ python generator.py \
   --n-samples 5
 ```
 
+### Using HuggingFace Datasets
+
+Load data directly from HuggingFace Hub:
+
+```bash
+# Simple dataset loading
+python generator.py \
+  --provider llama \
+  --model Llama-4-Maverick-17B-128E-Instruct-FP8 \
+  --prompt-file prompts/qa_template.txt \
+  --vars-file squad \
+  --n-samples 3
+
+# Advanced HF dataset configuration
+python generator.py \
+  --provider llama \
+  --model Llama-4-Maverick-17B-128E-Instruct-FP8 \
+  --prompt-file prompts/qa_template.txt \
+  --vars-file "squad::train::question,context::1000" \
+  --n-samples 5
+```
+
 ## 📋 Command Line Options
 
 ### Required Parameters
@@ -77,23 +107,29 @@ python generator.py \
 
 ### Generation Parameters
 - `--n-samples`: Number of samples per variable set (default: 1)
-- `--max-tokens`: Maximum tokens to generate (default: 300)
+- `--max-tokens`: Maximum tokens to generate (default: 1000)
 - `--temperature`: Sampling temperature (default: 0.7)
+- `--top-p`: Top-p for nucleus sampling (default: 0.95)
 - `--output-dir`: Output directory (default: ./output)
 
 ### Variable Input
 - `--vars`: Inline variables (`key=value key2=value2`)
-- `--vars-file`: JSON file with variable sets
+- `--vars-file`: Data source - supports:
+  - JSON file: `data.json`
+  - HF dataset from disk: `./saved_dataset/`
+  - HF Hub dataset: `squad`, `user/dataset`
+  - With options: `squad::train::question,context::1000`
 
 ### Reliability & Performance
 - `--checkpoint-interval`: Save progress every N variable sets (default: 5)
 - `--max-retries`: Retry failed requests up to N times (default: 3)
-- `--retry-delay`: Base delay between retries in seconds (default: 1.0)
+- `--retry-delay`: Base delay between retries in seconds (default: 0.5)
 - `--session-id`: Custom session identifier for checkpointing
 - `--resume`: Resume from existing checkpoint
 
 ### Utility
 - `--list-models`: Show available models and exit
+- `--demo`: Run in demo mode (limits to 5 variable sets, 2 samples each)
 
 ## 📝 Template System
 
@@ -124,6 +160,43 @@ Provide a detailed solution with explanations.
     "context": "geometry proofs"
   }
 ]
+```
+
+## 🤗 HuggingFace Dataset Integration
+
+The generator supports loading datasets directly from HuggingFace, making it easy to generate synthetic data based on existing datasets.
+
+### HuggingFace Dataset Format
+
+The format for HF dataset specification is:
+```
+dataset_name::config_name::split::columns::max_samples::streaming
+```
+
+All fields after dataset_name are optional:
+- `config_name`: Dataset configuration (if applicable)
+- `split`: Dataset split to use (default: train)
+- `columns`: Comma-separated list of columns to use
+- `max_samples`: Maximum number of samples to load
+- `streaming`: Whether to use streaming mode (true/false)
+
+### Examples
+
+```bash
+# Load entire SQuAD dataset
+--vars-file squad
+
+# Load specific columns from SQuAD
+--vars-file "squad::train::question,context"
+
+# Load limited samples
+--vars-file "squad::train::question,context::100"
+
+# Load from user/organization datasets
+--vars-file "google/boolq::train::question,passage::500"
+
+# Load saved dataset from disk
+--vars-file ./my_saved_dataset/
 ```
 
 ## 🛡️ Error Handling & Reliability
@@ -239,7 +312,23 @@ python generator.py \
   --session-id production_v1
 ```
 
-### Scenario 3: Rate-Limited API Handling
+### Scenario 3: Using HuggingFace Datasets
+
+Generate Q&A pairs from SQuAD dataset:
+
+```bash
+python generator.py \
+  --provider openai \
+  --model gpt-4 \
+  --prompt-file prompts/enhance_qa_template.txt \
+  --vars-file "squad::train::question,context,answers::1000" \
+  --n-samples 3 \
+  --output-dir outputs/enhanced_squad \
+  --checkpoint-interval 20 \
+  --session-id squad_enhancement_v1
+```
+
+### Scenario 4: Rate-Limited API Handling
 
 Optimized for APIs with strict rate limits:
 
@@ -257,7 +346,7 @@ python generator.py \
   --session-id rate_limited_experiment
 ```
 
-### Scenario 4: Quick Prototype Testing
+### Scenario 5: Quick Prototype Testing
 
 Fast iteration for testing templates:
 
@@ -270,10 +359,10 @@ python generator.py \
   --n-samples 2 \
   --output-dir outputs/test_0619 \
   --max-tokens 200 \
-  --session-id quick_test
+  --demo  # Demo mode for quick testing
 ```
 
-### Scenario 5: Resume After Interruption
+### Scenario 6: Resume After Interruption
 
 Your long-running job was interrupted - resume it:
 
@@ -297,25 +386,26 @@ python generator.py \
   --session-id interrupted_job_v2  # Will auto-resume!
 ```
 
-### Scenario 6: Analyze and Retry Failed Samples
+### Scenario 7: Process Custom HF Dataset
 
-After completion, analyze failures and retry them:
+Work with your own HuggingFace dataset:
 
 ```bash
-# First, check what failed
-cat outputs/math_sample_0619/synthetic_data_20250619_143022_summary.json
+# First, save a HF dataset locally
+python -c "
+from datasets import load_dataset
+ds = load_dataset('imdb', split='train[:1000]')
+ds.save_to_disk('./imdb_subset')
+"
 
-# Extract failed samples for retry (manual process or script)
-# Then retry with higher retry settings:
+# Then use it for generation
 python generator.py \
   --provider llama \
   --model Llama-4-Maverick-17B-128E-Instruct-FP8 \
-  --prompt-file prompts/synthetic_data/math_inspired_prompt.txt \
-  --vars-file failed_samples_variables.json \
-  --n-samples 5 \
-  --max-retries 10 \
-  --retry-delay 5.0 \
-  --session-id retry_failed_samples
+  --prompt-file prompts/sentiment_analysis.txt \
+  --vars-file ./imdb_subset/ \
+  --n-samples 2 \
+  --session-id imdb_analysis
 ```
 
 ## 📁 Output Structure
@@ -347,7 +437,14 @@ outputs/math_sample_0619/
   "generated_text": "To solve x^2 + 5x + 6 = 0, I'll use factoring...",
   "model": "Llama-4-Maverick-17B-128E-Instruct-FP8",
   "provider": "llama",
+  "generation_params": {
+    "max_tokens": 1000,
+    "temperature": 0.7,
+    "top_p": 0.95
+  },
   "timestamp": "2025-06-19T14:30:22.123456",
+  "sample_index": 0,
+  "variable_set_index": 0,
   "retry_count": 0
 }
 ```
@@ -357,9 +454,15 @@ outputs/math_sample_0619/
 {
   "error_id": "e1f2g3h4",
   "error_category": "rate_limit_error",
+  "error_description": "Rate limit exceeded",
   "error_message": "Rate limit exceeded. Try again later.",
+  "error_type": "RateLimitError",
+  "traceback": "...",
+  "sample_index": 2,
+  "variable_set_index": 5,
   "input_variables": {...},
   "generated_prompt": "...",
+  "config_used": {...},
   "retry_recommended": true,
   "timestamp": "2025-06-19T14:35:10.654321"
 }
@@ -372,15 +475,35 @@ outputs/math_sample_0619/
     "total_samples": 450,
     "successful_samples": 445,
     "failed_samples": 5,
-    "success_rate": 98.89
+    "success_rate": 98.89,
+    "unique_variable_sets": 90,
+    "generation_timestamp": "2025-06-19T14:45:30.123456",
+    "output_file": "outputs/math_sample_0619/synthetic_data_20250619_143022.json",
+    "failed_file": "outputs/math_sample_0619/synthetic_data_20250619_143022_failed.json"
   },
   "error_analysis": {
-    "rate_limit_error": 3,
-    "timeout_error": 2
+    "total_errors": 5,
+    "error_categories": {
+      "rate_limit_error": 3,
+      "timeout_error": 2
+    },
+    "error_types": {
+      "RateLimitError": 3,
+      "TimeoutError": 2
+    },
+    "retryable_errors": 5,
+    "non_retryable_errors": 0
   },
   "generation_stats": {
+    "total_attempts": 455,
+    "successful_generations": 445,
+    "failed_generations": 5,
     "retries_attempted": 12,
     "checkpoints_saved": 18
+  },
+  "retry_analysis": {
+    "total_retries": 12,
+    "avg_retries_per_failure": 2.4
   }
 }
 ```
@@ -427,6 +550,18 @@ python generator.py [your-args]
 # screen -r generation_job to reattach
 ```
 
+### 5. **Efficient HuggingFace Dataset Usage**
+```bash
+# For large datasets, limit samples during testing
+--vars-file "large_dataset::train::::100"
+
+# Use streaming for very large datasets
+--vars-file "c4::en::::1000::true"
+
+# Select specific columns to reduce memory
+--vars-file "squad::train::question,context"
+```
+
 ## 🚨 Troubleshooting
 
 ### Common Issues
@@ -435,6 +570,7 @@ python generator.py [your-args]
    - Check template file for correct variable names
    - Verify JSON variables file format
    - Use `--vars` to test with single variables
+   - For HF datasets, check column names match template variables
 
 2. **API Connection Errors**
    - Increase `--max-retries` and `--retry-delay`
@@ -446,10 +582,17 @@ python generator.py [your-args]
    - Check that model and n-samples match original run
    - Look for checkpoint files in output directory
 
-4. **Out of Memory/Disk Space**
+4. **HuggingFace Dataset Issues**
+   - Install datasets library: `pip install datasets`
+   - Check dataset exists on HF Hub
+   - Verify column names are correct
+   - Try with smaller sample size first
+
+5. **Out of Memory/Disk Space**
    - Reduce `--n-samples` per run
    - Use smaller `--checkpoint-interval`
    - Monitor disk space in output directory
+   - For HF datasets, use `max_samples` parameter
 
 ### Getting Help
 
@@ -457,11 +600,14 @@ python generator.py [your-args]
 # List available models
 python generator.py --provider llama --list-models
 
-# Preview template variables
+# Check template variables
 python generator.py --prompt-file your_template.txt --vars dummy=test
 
 # Test with minimal settings
 python generator.py --provider llama --model small-model --prompt-file template.txt --vars test=value --n-samples 1
+
+# Run in demo mode
+python generator.py --provider llama --model your-model --prompt-file template.txt --vars-file data.json --demo
 ```
 
 ## 📈 Performance Tips
@@ -471,7 +617,10 @@ python generator.py --provider llama --model small-model --prompt-file template.
 3. **Retry Strategy**: Higher retries for unreliable networks
 4. **Parallel Processing**: Run multiple sessions with different `--session-id`
 5. **Monitor Resources**: Watch CPU, memory, and disk usage during large runs
-
+6. **HF Dataset Optimization**: 
+   - Use column selection to reduce memory usage
+   - Limit samples during development
+   - Consider streaming for very large datasets
 
 ## 🏆 Summary
 
@@ -482,6 +631,7 @@ This synthetic data generator provides enterprise-grade reliability for AI-power
 - ✅ **Cost Efficient**: Avoid re-running expensive API calls  
 - ✅ **Production Ready**: Comprehensive error handling and reporting
 - ✅ **Scalable**: Handle datasets of any size with confidence
+- ✅ **Flexible Data Sources**: Support for JSON files and HuggingFace datasets
 - ✅ **Debuggable**: Detailed logs and error analysis for troubleshooting
 
 Happy generating! 🚀
